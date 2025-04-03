@@ -1,0 +1,63 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .starRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .activeStar {
+    color: #F44336; /* Couleur pour l'étoile sélectionnée */
+    border-radius: 4px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .inactiveStar {
+    color: #E0E0E0;
+    border-radius: 4px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .starContainer {
+    position: relative; /* Pour positionner le pseudo-élément */
+    border-radius: 12px;
+    padding: 8px;
+    display: inline-block;
+    /* Supprime la box-shadow ici si elle était définie */
+  }
+
+  .disabledStar {
+    color: #ccc; /* Couleur grisée */
+    font-size: 24px;
+    margin: 4px;
+    border-radius: 4px;
+  }
+  
+  
+  
+  .starContainer::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 8px; /* Ajuste cette valeur pour contrôler la taille de l'ombre */
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Ombre uniquement en bas */
+    pointer-events: none; /* Pour éviter que l'ombre n'interfère avec les interactions */
+  }
+  
+
+  @media (max-width: 600px) {
+    .container {
+      text-align: center;
+      margin: 0 auto;
+    }
+  }
+  
+

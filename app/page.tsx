@@ -1,95 +1,268 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import React, { useState, useEffect } from 'react';
+import FormSection from '@/components/FormSection';
+import StarRating from '@/components/StarRating';
+import RadioOption from '@/components/RadioOption';
+import DropdownSelect from '@/components/DropdownSelect';
+import { useFeedbackStore } from '@/store/feedback-store';
+import styles from './page.module.css';
+
+export default function MealFeedbackPage() {
+  const {
+    appetizerRating,
+    mainCourseRating,
+    tasteRating,
+    portionRating,
+    finishedPlate,
+    notEatenReason,
+    comment,
+    chosenStarter,
+    chosenMainCourse,
+    setAppetizerRating,
+    setMainCourseRating,
+    setTasteRating,
+    setPortionRating,
+    setFinishedPlate,
+    setNotEatenReason,
+    setComment,
+    setChosenStarter,
+    setChosenMainCourse,
+    resetForm,
+  } = useFeedbackStore();
+
+  const [noAppetizer, setNoAppetizer] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] } | null>(null);
+
+  const reasonOptions = [
+    "Portion trop grosse",
+    "Pas à mon goût",
+    "Pas très faim",
+    "Autre"
+  ];
+
+  // Récupère automatiquement le menu du jour
+  useEffect(() => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const hour = now.getHours();
+    const mealPeriod = hour < 15 ? 'midi' : 'soir';
+    
+    fetch(`/api/menu?date=${dateStr}&mealPeriod=${mealPeriod}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setMenu(data);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const handleSubmit = async () => {
+    if (
+      appetizerRating === 0 ||
+      mainCourseRating === 0 ||
+      tasteRating === 0 ||
+      portionRating === 0 ||
+      finishedPlate === null ||
+      (finishedPlate === false && !notEatenReason)
+    ) {
+      alert('Formulaire incomplet. Merci de remplir tous les champs obligatoires.');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appetizerRating,
+          mainCourseRating,
+          tasteRating,
+          portionRating,
+          finishedPlate,
+          notEatenReason,
+          comment,
+          chosenStarter,
+          chosenMainCourse,
+          date: new Date().toISOString(),
+        }),
+      });
+      if (res.ok) {
+        setMessage('Merci pour votre feedback !');
+        resetForm();
+      } else {
+        setMessage("Erreur lors de l'envoi.");
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage("Erreur lors de l'envoi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className={styles.container}>
+      <h1 style={{ textAlign: 'center' }}>Ta contribution sur le repas du jour</h1>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <FormSection
+        title="Quel entrée as-tu choisis ?"
+        icon={<span role="img" aria-label="entrée">🍽️</span>}
+        subtitle="Sélectionne ton entrée parmi les options"
+      >
+        <div className={styles.radioGroup}>
+          {menu && menu.starters && menu.starters.length > 0 ? (
+            menu.starters.map((option, index) => (
+              <RadioOption
+                key={index}
+                label={option}
+                selected={chosenStarter === option}
+                onSelect={() => setChosenStarter(option)}
+              />
+            ))
+          ) : (
+            <p>Aucun menu disponible pour aujourd'hui</p>
+          )}
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </FormSection>
+      
+      <FormSection
+        title="Note l'entrée d'aujourd'hui"
+        icon={<span role="img" aria-label="salade">🥗</span>}
+        subtitle="Comment as-tu trouvé l'entrée ?"
+      >
+        <StarRating 
+          rating={appetizerRating} 
+          onRatingChange={setAppetizerRating} 
+          disabled={noAppetizer} 
+        />
+        <button
+          onClick={() => {
+            if (!noAppetizer) {
+              setNoAppetizer(true);
+              setAppetizerRating(0);
+            } else {
+              setNoAppetizer(false);
+            }
+          }}
+          style={{
+            backgroundColor: noAppetizer ? 'white' : 'red',
+            color: noAppetizer ? 'red' : 'white',
+            border: noAppetizer ? '2px solid red' : 'none',
+            borderRadius: '9999px',
+            padding: '8px 16px',
+            marginTop: '16px',
+            cursor: 'pointer',
+            display: 'block',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            fontFamily: 'var(--font-marianne)',
+            transition: 'background-color 0.3s ease, color 0.3s ease, border 0.3s ease, opacity 0.3s ease',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          Je n&apos;ai pas pris d&apos;entrée
+        </button>
+      </FormSection>
+
+      <FormSection
+        title="Quel plat as-tu choisis ?"
+        icon={<span role="img" aria-label="plat">🍽️</span>}
+        subtitle="Sélectionne ton plat parmi les options"
+      >
+        <div className={styles.radioGroup}>
+          {menu && menu.main_courses && menu.main_courses.length > 0 ? (
+            menu.main_courses.map((option, index) => (
+              <RadioOption
+                key={index}
+                label={option}
+                selected={chosenMainCourse === option}
+                onSelect={() => setChosenMainCourse(option)}
+              />
+            ))
+          ) : (
+            <p>Aucun menu disponible pour aujourd'hui</p>
+          )}
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Note le plat principal"
+        icon={<span role="img" aria-label="soupe">🍜</span>}
+        subtitle="Comment as-tu trouvé le plat principal ?"
+      >
+        <StarRating rating={mainCourseRating} onRatingChange={setMainCourseRating} />
+      </FormSection>
+
+      <FormSection
+        title="Et le goût général ?"
+        icon={<span role="img" aria-label="utensils">🍴</span>}
+        subtitle="Le repas était-il bien assaisonné et équilibré ?"
+      >
+        <StarRating rating={tasteRating} onRatingChange={setTasteRating} />
+      </FormSection>
+
+      <FormSection
+        title="La quantité servie"
+        icon={<span role="img" aria-label="sandwich">🥪</span>}
+        subtitle="Les portions étaient-elles suffisantes ?"
+      >
+        <StarRating rating={portionRating} onRatingChange={setPortionRating} />
+      </FormSection>
+
+      <FormSection
+        title="As-tu fini ton assiette ?"
+        icon={<span role="img" aria-label="trash">🗑️</span>}
+      >
+        <div className={styles.radioGroup}>
+          <RadioOption
+            label="✅ Oui, tout mangé"
+            selected={finishedPlate === true}
+            onSelect={() => setFinishedPlate(true)}
           />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <RadioOption
+            label="♻️ Non, il en restait"
+            selected={finishedPlate === false}
+            onSelect={() => setFinishedPlate(false)}
           />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+        </div>
+        
+        {finishedPlate === false && (
+          <DropdownSelect
+            options={reasonOptions}
+            value={notEatenReason}
+            onChange={setNotEatenReason}
+            placeholder="Si non, pourquoi ?"
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        )}
+      </FormSection>
+
+      <FormSection
+        title="Un commentaire ? (facultatif)"
+        icon={<span role="img" aria-label="message">💬</span>}
+      >
+        <div className={styles.textareaContainer}>
+          <textarea
+            className={styles.textarea}
+            placeholder="Partagez votre avis..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={4}
+            maxLength={150}
+          />
+        </div>
+      </FormSection>
+
+      <button onClick={handleSubmit} className={styles.submitButton} disabled={loading}>
+        Envoyer
+      </button>
+
+      {message && <p className={styles.message}>{message}</p>}
     </div>
   );
 }

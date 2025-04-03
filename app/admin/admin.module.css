@@ -1,0 +1,78 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .tab {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .activeTab {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .formGroup {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .label {
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+  
+  /* Ciblage des éléments de formulaire à l'intérieur de .formGroup */
+  .formGroup input[type="date"],
+  .formGroup input[type="text"],
+  .formGroup select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .submitButton {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    margin: 24px auto;
+  }
+  
+  /* Styles pour la frise chronologique */
+  .timeline {
+    margin-bottom: 20px;
+  }
+  
+  /* Styles pour chaque plat (ligne d'édition) */
+  .dishItem {
+    margin-bottom: 12px;
+  }
+  
+  .dishInput {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }

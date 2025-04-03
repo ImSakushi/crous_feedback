@@ -107,6 +107,71 @@ a.secondary {
 .footer img {
   flex-shrink: 0;
 }
+.textareaContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.textarea {
+  background-color: #F5F5F5; /* Fond gris */
+  border-radius: 12px;       /* Bords arrondis */
+  padding: 12px;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Même ombre que StarContainer */
+  font-size: 16px;
+  resize: vertical;
+  transition: box-shadow 0.3s ease;
+  font-family: var(--font-marianne); /* Utilisation de la police Marianne */
+}
+
+
+.textarea:focus {
+  outline: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.submitButton {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: block;
+  margin: 24px auto;
+  transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+  background-color: #0056b3;
+}
+
+.submitButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.message {
+  text-align: center;
+  color: #28a745;
+  font-weight: bold;
+  margin-top: 16px;
+}
 
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
