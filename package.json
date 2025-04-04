@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "cookie": "^1.0.2",
+    "jose": "^6.0.10",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.2.4",
     "pg": "^8.14.1",
     "react": "^19.0.0",
@@ -17,6 +20,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
     "@types/pg": "^8.11.11",
     "@types/react": "^19",

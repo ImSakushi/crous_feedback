@@ -2,6 +2,7 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    font-family: var(--font-marianne), sans-serif;
   }
   
   .tabs {
@@ -16,6 +17,7 @@
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 4px;
+    font-family: inherit;
   }
   
   .activeTab {
@@ -25,6 +27,7 @@
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 4px;
+    font-family: inherit;
   }
   
   .formGroup {
@@ -38,13 +41,14 @@
     font-weight: bold;
   }
   
-  /* Ciblage des éléments de formulaire à l'intérieur de .formGroup */
   .formGroup input[type="date"],
   .formGroup input[type="text"],
+  .formGroup input[type="password"],
   .formGroup select {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-family: inherit;
   }
   
   .submitButton {
@@ -58,16 +62,24 @@
     cursor: pointer;
     display: block;
     margin: 24px auto;
+    font-family: inherit;
   }
   
-  /* Styles pour la frise chronologique */
+  /* Timeline styles améliorées */
   .timeline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     margin-bottom: 20px;
+    background-color: #fafafa;
   }
   
-  /* Styles pour chaque plat (ligne d'édition) */
   .dishItem {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }
   
   .dishInput {
@@ -75,4 +87,7 @@
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-family: inherit;
+    margin-bottom: 10px;
   }
+

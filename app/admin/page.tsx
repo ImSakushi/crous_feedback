@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormSection from '@/components/FormSection';
 import styles from './admin.module.css';
 
@@ -15,47 +15,68 @@ interface Menu {
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<'ajouter' | 'plats'>('ajouter');
 
-  // États pour l'ajout d'un menu
+  // États pour l'ajout d'un menu (stockés en tableaux dynamiques)
   const [date, setDate] = useState('');
   const [mealPeriod, setMealPeriod] = useState('midi');
-  const [starters, setStarters] = useState('');
-  const [mainCourses, setMainCourses] = useState('');
+  const [starters, setStarters] = useState<string[]>(['']);
+  const [mainCourses, setMainCourses] = useState<string[]>(['']);
   const [message, setMessage] = useState('');
 
-  // États pour l'édition via frise chronologique (onglet "Plats")
+  // États pour l'édition via la frise (onglet "Plats")
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedMealPeriod, setSelectedMealPeriod] = useState('midi');
   const [menu, setMenu] = useState<Menu | null>(null);
   const [menuLoading, setMenuLoading] = useState(false);
+  const [updatedStarters, setUpdatedStarters] = useState<string[]>([]);
   const [updatedMainCourses, setUpdatedMainCourses] = useState<string[]>([]);
   const [updateMessage, setUpdateMessage] = useState('');
 
+  // Fonction de formatage de la date : "2025-04-02T22:00:00.000Z" -> "04 Avril 2025"
+  function formatDate(dateStr: string): string {
+    const dateObj = new Date(dateStr);
+    const parts = dateObj.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }).split(' ');
+    if (parts.length === 3) {
+      parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+    }
+    return parts.join(' ');
+  }
+
   const handleAddMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Filtrer les champs vides
+    const filteredStarters = starters.filter(s => s.trim() !== '');
+    const filteredMainCourses = mainCourses.filter(s => s.trim() !== '');
+
     const res = await fetch('/api/admin/menu', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         date,
         mealPeriod,
-        // On découpe les chaînes saisies par virgule et on élimine les espaces inutiles
-        starters: starters.split(',').map(s => s.trim()),
-        mainCourses: mainCourses.split(',').map(s => s.trim()),
+        starters: filteredStarters,
+        mainCourses: filteredMainCourses,
       }),
     });
     if (res.ok) {
       setMessage('Menu ajouté avec succès');
       setDate('');
       setMealPeriod('midi');
-      setStarters('');
-      setMainCourses('');
+      setStarters(['']);
+      setMainCourses(['']);
     } else {
       setMessage("Erreur lors de l'ajout du menu");
     }
   };
 
-  const handleFetchMenu = async () => {
-    if (!selectedDate) return;
+  const fetchMenu = async () => {
+    if (!selectedDate) {
+      setMenu(null);
+      return;
+    }
     setMenuLoading(true);
     setMenu(null);
     setUpdateMessage('');
@@ -65,6 +86,7 @@ export default function AdminPanel() {
         const data = await res.json();
         setMenu(data);
         setUpdatedMainCourses(data.main_courses);
+        setUpdatedStarters(data.starters);
       } else {
         setMenu(null);
       }
@@ -76,10 +98,22 @@ export default function AdminPanel() {
     }
   };
 
+  useEffect(() => {
+    if (selectedDate) {
+      fetchMenu();
+    }
+  }, [selectedDate, selectedMealPeriod]);
+
   const handleDishChange = (index: number, value: string) => {
     const newCourses = [...updatedMainCourses];
     newCourses[index] = value;
     setUpdatedMainCourses(newCourses);
+  };
+
+  const handleStarterChange = (index: number, value: string) => {
+    const newStarters = [...updatedStarters];
+    newStarters[index] = value;
+    setUpdatedStarters(newStarters);
   };
 
   const handleSaveMenu = async () => {
@@ -90,12 +124,33 @@ export default function AdminPanel() {
       body: JSON.stringify({
         id: menu.id,
         mainCourses: updatedMainCourses,
+        starters: updatedStarters,
       }),
     });
     if (res.ok) {
       setUpdateMessage('Menu mis à jour avec succès');
     } else {
       setUpdateMessage('Erreur lors de la mise à jour du menu');
+    }
+  };
+
+  // Fonctions pour gérer les inputs dynamiques lors de l'ajout d'un menu
+  const handleStarterInputChange = (index: number, value: string) => {
+    const newStarters = [...starters];
+    newStarters[index] = value;
+    setStarters(newStarters);
+    // Ajoute un nouvel input si le dernier champ devient non vide
+    if (index === newStarters.length - 1 && value.trim() !== '') {
+      setStarters([...newStarters, '']);
+    }
+  };
+
+  const handleMainCourseInputChange = (index: number, value: string) => {
+    const newMainCourses = [...mainCourses];
+    newMainCourses[index] = value;
+    setMainCourses(newMainCourses);
+    if (index === newMainCourses.length - 1 && value.trim() !== '') {
+      setMainCourses([...newMainCourses, '']);
     }
   };
 
@@ -133,12 +188,32 @@ export default function AdminPanel() {
               </select>
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Entrées (séparées par des virgules) :</label>
-              <input type="text" value={starters} onChange={(e) => setStarters(e.target.value)} placeholder="Ex: Entrée 1, Entrée 2" required />
+              <label className={styles.label}>Entrées :</label>
+              {starters.map((starter, index) => (
+                <input 
+                  key={index}
+                  type="text" 
+                  value={starter}
+                  onChange={(e) => handleStarterInputChange(index, e.target.value)}
+                  placeholder={`Entrée ${index + 1}`}
+                  required={index === 0}
+                  className={styles.dishInput}
+                />
+              ))}
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Plats (séparés par des virgules) :</label>
-              <input type="text" value={mainCourses} onChange={(e) => setMainCourses(e.target.value)} placeholder="Ex: Plat 1, Plat 2" required />
+              <label className={styles.label}>Plats :</label>
+              {mainCourses.map((course, index) => (
+                <input 
+                  key={index}
+                  type="text" 
+                  value={course}
+                  onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
+                  placeholder={`Plat ${index + 1}`}
+                  required={index === 0}
+                  className={styles.dishInput}
+                />
+              ))}
             </div>
           </FormSection>
           <button type="submit" className={styles.submitButton}>Ajouter le menu</button>
@@ -148,7 +223,7 @@ export default function AdminPanel() {
 
       {activeTab === 'plats' && (
         <div>
-          <h2>Modifier les plats</h2>
+          <h2>Modifier les menus</h2>
           <div className={styles.timeline}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Choisir la date :</label>
@@ -161,16 +236,29 @@ export default function AdminPanel() {
                 <option value="soir">Soir</option>
               </select>
             </div>
-            <button onClick={handleFetchMenu} className={styles.submitButton}>Afficher le menu</button>
           </div>
           {menuLoading ? (
             <p>Chargement...</p>
           ) : menu ? (
             <div>
-              <h3>Menu du {menu.date} - {menu.meal_period}</h3>
+              <h3>Menu du {menu.meal_period} du {formatDate(menu.date)}</h3>
               <div>
+                <h4>Entrées</h4>
+                {updatedStarters.map((starter, index) => (
+                  <div key={`starter-${index}`} className={styles.dishItem}>
+                    <input 
+                      type="text" 
+                      value={starter} 
+                      onChange={(e) => handleStarterChange(index, e.target.value)}
+                      className={styles.dishInput}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h4>Plats</h4>
                 {updatedMainCourses.map((dish, index) => (
-                  <div key={index} className={styles.dishItem}>
+                  <div key={`dish-${index}`} className={styles.dishItem}>
                     <input 
                       type="text" 
                       value={dish} 
