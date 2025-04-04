@@ -5,6 +5,7 @@ import FormSection from '@/components/FormSection';
 import styles from './admin.module.css';
 import { Line, Pie, Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
+import { useRouter } from 'next/navigation';
 
 interface Menu {
   id: number;
@@ -15,7 +16,10 @@ interface Menu {
 }
 
 export default function AdminPanel() {
+  // Gestion des onglets
   const [activeTab, setActiveTab] = useState<'ajouter' | 'plats' | 'statistiques'>('ajouter');
+  const [currentAdmin, setCurrentAdmin] = useState<{ id: number; username: string; role: string } | null>(null);
+  const router = useRouter();
 
   // États pour l'onglet "Ajouter un menu"
   const [date, setDate] = useState('');
@@ -38,6 +42,22 @@ export default function AdminPanel() {
   const [filterEndDate, setFilterEndDate] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+
+  // Récupérer les infos de l'admin connecté
+  useEffect(() => {
+    async function fetchCurrentAdmin() {
+      try {
+        const res = await fetch('/api/admin/me');
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentAdmin(data.admin);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    fetchCurrentAdmin();
+  }, []);
 
   // Fonction de formatage de la date
   function formatDate(dateStr: string): string {
@@ -305,6 +325,14 @@ export default function AdminPanel() {
         >
           Statistiques
         </button>
+        {currentAdmin?.role === 'superadmin' && (
+          <button 
+            onClick={() => router.push('/admin/users')}
+            className={styles.tab}
+          >
+            Utilisateurs
+          </button>
+        )}
       </div>
 
       {activeTab === 'ajouter' && (
@@ -466,3 +494,5 @@ export default function AdminPanel() {
     </div>
   );
 }
+
+export { AdminPanel };

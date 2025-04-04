@@ -6,7 +6,6 @@ import { serialize } from 'cookie';
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
 });
-
 client.connect();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -32,8 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ error: 'Erreur serveur' });
       }
 
+      // Le token inclut désormais le rôle (exemple : "admin" ou "superadmin")
       const token = jwt.sign(
-        { id: admin.id, username: admin.username },
+        { id: admin.id, username: admin.username, role: admin.role },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
       );
