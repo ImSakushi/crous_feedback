@@ -495,4 +495,4 @@ export default function AdminPanel() {
   );
 }
 
-export { AdminPanel };
+export default AdminPanel;
