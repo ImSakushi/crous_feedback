@@ -1,12 +1,6 @@
-// pages/api/admin/menu.ts
+// Exemple dans pages/api/admin/menu.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -15,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Tous les champs sont requis.' });
     }
     try {
-      const result = await client.query(
+      const result = await pool.query(
         `INSERT INTO menus (date, meal_period, starters, main_courses)
          VALUES ($1, $2, $3, $4) RETURNING *`,
          [date, mealPeriod, starters, mainCourses]
