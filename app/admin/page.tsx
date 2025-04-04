@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import FormSection from '@/components/FormSection';
 import styles from './admin.module.css';
-import { Line, Pie } from 'react-chartjs-2';
+import { Line, Pie, Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
 
 interface Menu {
@@ -161,7 +161,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Fonction pour récupérer les statistiques (onglet Statistiques)
+  // Récupération des statistiques depuis l'API
   const fetchStatistics = async () => {
     setLoadingStats(true);
     let url = '/api/admin/statistics';
@@ -184,7 +184,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Préparation des données pour le graphique linéaire (nombre de feedbacks par date)
+  // Données pour le graphique linéaire (feedbacks par date)
   const lineChartData = {
     labels: stats ? stats.groupByDate.map((item: any) => item.feedback_date) : [],
     datasets: [
@@ -198,7 +198,16 @@ export default function AdminPanel() {
     ],
   };
 
-  // Préparation des données pour le graphique en camembert (feedbacks : tout mangé vs partiellement mangé)
+  const lineChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+  };
+
+  // Données pour le graphique en camembert (feedbacks selon finished_plate)
   const pieChartData = {
     labels: stats ? stats.finished.map((item: any) => item.finished_plate ? 'Tout mangé' : 'Partiellement mangé') : [],
     datasets: [
@@ -209,7 +218,7 @@ export default function AdminPanel() {
     ],
   };
 
-  const lineChartOptions = {
+  const pieChartOptions = {
     responsive: true,
     plugins: {
       legend: {
@@ -218,13 +227,59 @@ export default function AdminPanel() {
     },
   };
 
-  const pieChartOptions = {
+  // Options communes pour les graphiques en barres
+  const barChartOptions = {
     responsive: true,
     plugins: {
       legend: {
         position: 'top' as const,
       },
     },
+  };
+
+  // Données pour les distributions de notes
+  const barChartDataAppetizer = {
+    labels: stats ? stats.distribution.appetizer.map((item: any) => item.rating) : [],
+    datasets: [
+      {
+        label: 'Entrée',
+        data: stats ? stats.distribution.appetizer.map((item: any) => item.count) : [],
+        backgroundColor: 'rgba(255,99,132,0.5)',
+      },
+    ],
+  };
+
+  const barChartDataMainCourse = {
+    labels: stats ? stats.distribution.mainCourse.map((item: any) => item.rating) : [],
+    datasets: [
+      {
+        label: 'Plat principal',
+        data: stats ? stats.distribution.mainCourse.map((item: any) => item.count) : [],
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+      },
+    ],
+  };
+
+  const barChartDataTaste = {
+    labels: stats ? stats.distribution.taste.map((item: any) => item.rating) : [],
+    datasets: [
+      {
+        label: 'Goût général',
+        data: stats ? stats.distribution.taste.map((item: any) => item.count) : [],
+        backgroundColor: 'rgba(255, 206, 86, 0.5)',
+      },
+    ],
+  };
+
+  const barChartDataPortion = {
+    labels: stats ? stats.distribution.portion.map((item: any) => item.rating) : [],
+    datasets: [
+      {
+        label: 'Portion',
+        data: stats ? stats.distribution.portion.map((item: any) => item.count) : [],
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+      },
+    ],
   };
 
   return (
@@ -379,11 +434,28 @@ export default function AdminPanel() {
               <p>Moyenne plat principal : {stats.averages.avg_main_course ? parseFloat(stats.averages.avg_main_course).toFixed(1) : '-'}</p>
               <p>Moyenne goût général : {stats.averages.avg_taste ? parseFloat(stats.averages.avg_taste).toFixed(1) : '-'}</p>
               <p>Moyenne portion : {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'}</p>
+
               <div className={styles.chartContainer}>
                 <Line data={lineChartData} options={lineChartOptions} />
               </div>
               <div className={styles.chartContainer}>
                 <Pie data={pieChartData} options={pieChartOptions} />
+              </div>
+              <div className={styles.chartContainer}>
+                <h3>Distribution des notes - Entrée</h3>
+                <Bar data={barChartDataAppetizer} options={barChartOptions} />
+              </div>
+              <div className={styles.chartContainer}>
+                <h3>Distribution des notes - Plat principal</h3>
+                <Bar data={barChartDataMainCourse} options={barChartOptions} />
+              </div>
+              <div className={styles.chartContainer}>
+                <h3>Distribution des notes - Goût général</h3>
+                <Bar data={barChartDataTaste} options={barChartOptions} />
+              </div>
+              <div className={styles.chartContainer}>
+                <h3>Distribution des notes - Portion</h3>
+                <Bar data={barChartDataPortion} options={barChartOptions} />
               </div>
             </div>
           ) : (

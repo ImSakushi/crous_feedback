@@ -22,7 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Total des feedbacks
-    const totalResult = await client.query(`SELECT COUNT(*) AS total FROM feedback ${filterClause}`, params);
+    const totalResult = await client.query(
+      `SELECT COUNT(*) AS total FROM feedback ${filterClause}`, 
+      params
+    );
     const total = totalResult.rows[0].total;
 
     // Moyennes des notes
@@ -36,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
-    // Répartition des feedbacks selon "finished_plate"
+    // Répartition selon finished_plate
     const finishedResult = await client.query(
       `SELECT finished_plate, COUNT(*) AS count 
        FROM feedback ${filterClause} 
@@ -44,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
-    // Groupement par date (pour le graphique)
+    // Groupement par date (pour le graphique linéaire)
     const groupByDateResult = await client.query(
       `SELECT DATE(date) as feedback_date, COUNT(*) as count 
        FROM feedback ${filterClause} 
@@ -53,11 +56,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
+    // Distribution des notes pour chaque critère
+    const distAppetizerResult = await client.query(
+      `SELECT appetizer_rating as rating, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY appetizer_rating
+       ORDER BY appetizer_rating`,
+      params
+    );
+    const distMainCourseResult = await client.query(
+      `SELECT main_course_rating as rating, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY main_course_rating
+       ORDER BY main_course_rating`,
+      params
+    );
+    const distTasteResult = await client.query(
+      `SELECT taste_rating as rating, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY taste_rating
+       ORDER BY taste_rating`,
+      params
+    );
+    const distPortionResult = await client.query(
+      `SELECT portion_rating as rating, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY portion_rating
+       ORDER BY portion_rating`,
+      params
+    );
+
     res.status(200).json({
       total,
       averages: averagesResult.rows[0],
       finished: finishedResult.rows,
       groupByDate: groupByDateResult.rows,
+      distribution: {
+        appetizer: distAppetizerResult.rows,
+        mainCourse: distMainCourseResult.rows,
+        taste: distTasteResult.rows,
+        portion: distPortionResult.rows,
+      },
     });
   } catch (error) {
     console.error(error);
