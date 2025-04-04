@@ -91,3 +91,13 @@
     margin-bottom: 10px;
   }
 
+  .filterSection {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .chartContainer {
+    margin: 20px 0;
+  }
