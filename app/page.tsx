@@ -34,7 +34,20 @@ export default function MealFeedbackPage() {
   const [noAppetizer, setNoAppetizer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] } | null>(null);
+  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] }>({
+    starters: [
+      "Carrottes râpées",
+      "Pôtage de légumes"
+    ],
+    main_courses: [
+      "Côte de porc",
+      "Goulash de bœuf", 
+      "Viennoise de dinde",
+      "Saucisse de Toulouse",
+      "Purée / Courgette",
+      "Pizzas aux légumes"
+    ]
+  });
 
   const reasonOptions = [
     "Portion trop grosse",
@@ -125,7 +138,7 @@ export default function MealFeedbackPage() {
               />
             ))
           ) : (
-            <p>Aucun menu disponible pour aujourd'hui</p>
+            <p>Aucun menu disponible pour aujourd&apos;hui</p>
           )}
         </div>
       </FormSection>
@@ -186,7 +199,7 @@ export default function MealFeedbackPage() {
               />
             ))
           ) : (
-            <p>Aucun menu disponible pour aujourd'hui</p>
+            <p>Aucun menu disponible pour aujourd&apos;hui</p>
           )}
         </div>
       </FormSection>
