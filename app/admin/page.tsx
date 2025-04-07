@@ -358,7 +358,6 @@ export default function AdminPanel() {
                   value={starter}
                   onChange={(e) => handleStarterInputChange(index, e.target.value)}
                   placeholder={`Entrée ${index + 1}`}
-                  required={index === 0}
                   className={styles.dishInput}
                 />
               ))}

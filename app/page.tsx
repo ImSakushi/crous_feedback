@@ -31,6 +31,10 @@ export default function MealFeedbackPage() {
     resetForm,
   } = useFeedbackStore();
 
+  // Nouveaux états pour les valeurs personnalisées
+  const [customStarter, setCustomStarter] = useState('');
+  const [customMainCourse, setCustomMainCourse] = useState('');
+
   const [noAppetizer, setNoAppetizer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -43,7 +47,7 @@ export default function MealFeedbackPage() {
     "Autre"
   ];
 
-  // Récupère automatiquement le menu du jour
+  // Récupération automatique du menu du jour
   useEffect(() => {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -61,6 +65,19 @@ export default function MealFeedbackPage() {
   }, []);
 
   const handleSubmit = async () => {
+    // Si l'utilisateur saisit son plat/entrée personnalisé, vérifier que le champ est renseigné
+    if (chosenStarter === "other" && !customStarter.trim()) {
+      alert("Veuillez renseigner votre entrée personnalisée");
+      return;
+    }
+    if (chosenMainCourse === "other" && !customMainCourse.trim()) {
+      alert("Veuillez renseigner votre plat personnalisé");
+      return;
+    }
+
+    const finalChosenStarter = chosenStarter === "other" ? customStarter : chosenStarter;
+    const finalChosenMainCourse = chosenMainCourse === "other" ? customMainCourse : chosenMainCourse;
+    
     if (
       appetizerRating === 0 ||
       mainCourseRating === 0 ||
@@ -86,14 +103,16 @@ export default function MealFeedbackPage() {
           finishedPlate,
           notEatenReason,
           comment,
-          chosenStarter,
-          chosenMainCourse,
+          chosenStarter: finalChosenStarter,
+          chosenMainCourse: finalChosenMainCourse,
           date: new Date().toISOString(),
         }),
       });
       if (res.ok) {
         setMessage('Merci pour votre feedback !');
         resetForm();
+        setCustomStarter('');
+        setCustomMainCourse('');
       } else {
         setMessage("Erreur lors de l'envoi.");
       }
@@ -115,18 +134,33 @@ export default function MealFeedbackPage() {
         subtitle="Sélectionne ton entrée parmi les options"
       >
         <div className={styles.radioGroup}>
-          {menu && menu.starters && menu.starters.length > 0 ? (
-            menu.starters.map((option, index) => (
-              <RadioOption
-                key={index}
-                label={option}
-                selected={chosenStarter === option}
-                onSelect={() => setChosenStarter(option)}
-              />
-            ))
-          ) : (
-            <p>Aucun menu disponible pour aujourd&apos;hui</p>
-          )}
+          {menu && menu.starters && menu.starters.length > 0 && menu.starters.map((option, index) => (
+            <RadioOption
+              key={index}
+              label={option}
+              selected={chosenStarter === option}
+              onSelect={() => setChosenStarter(option)}
+            />
+          ))}
+          {/* Option personnalisée : radio button avec input intégré */}
+          <div 
+            className={styles.radioOption} 
+            onClick={() => setChosenStarter("other")}
+          >
+            <div className={styles.radioButton}>
+              {chosenStarter === "other" && <div className={styles.radioInner} />}
+            </div>
+            <input
+              type="text"
+              placeholder="Autre entrée"
+              value={customStarter}
+              onChange={(e) => {
+                setCustomStarter(e.target.value);
+                setChosenStarter("other");
+              }}
+              className={styles.radioInput}
+            />
+          </div>
         </div>
       </FormSection>
       
@@ -176,18 +210,33 @@ export default function MealFeedbackPage() {
         subtitle="Sélectionne ton plat parmi les options"
       >
         <div className={styles.radioGroup}>
-          {menu && menu.main_courses && menu.main_courses.length > 0 ? (
-            menu.main_courses.map((option, index) => (
-              <RadioOption
-                key={index}
-                label={option}
-                selected={chosenMainCourse === option}
-                onSelect={() => setChosenMainCourse(option)}
-              />
-            ))
-          ) : (
-            <p>Aucun menu disponible pour aujourd&apos;hui</p>
-          )}
+          {menu && menu.main_courses && menu.main_courses.length > 0 && menu.main_courses.map((option, index) => (
+            <RadioOption
+              key={index}
+              label={option}
+              selected={chosenMainCourse === option}
+              onSelect={() => setChosenMainCourse(option)}
+            />
+          ))}
+          {/* Option personnalisée pour le plat */}
+          <div 
+            className={styles.radioOption} 
+            onClick={() => setChosenMainCourse("other")}
+          >
+            <div className={styles.radioButton}>
+              {chosenMainCourse === "other" && <div className={styles.radioInner} />}
+            </div>
+            <input
+              type="text"
+              placeholder="Autre plat"
+              value={customMainCourse}
+              onChange={(e) => {
+                setCustomMainCourse(e.target.value);
+                setChosenMainCourse("other");
+              }}
+              className={styles.radioInput}
+            />
+          </div>
         </div>
       </FormSection>
 
