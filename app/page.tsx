@@ -34,20 +34,7 @@ export default function MealFeedbackPage() {
   const [noAppetizer, setNoAppetizer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] }>({
-    starters: [
-      "Carrottes râpées",
-      "Pôtage de légumes"
-    ],
-    main_courses: [
-      "Côte de porc",
-      "Goulash de bœuf", 
-      "Viennoise de dinde",
-      "Saucisse de Toulouse",
-      "Purée / Courgette",
-      "Pizzas aux légumes"
-    ]
-  });
+  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] } | null>(null);
 
   const reasonOptions = [
     "Portion trop grosse",
