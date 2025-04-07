@@ -52,7 +52,7 @@ export default function MealFeedbackPage() {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const hour = now.getHours();
-    const mealPeriod = hour < 15 ? 'midi' : 'soir';
+    const mealPeriod = hour < 18 ? 'midi' : 'soir';
     
     fetch(`/api/menu?date=${dateStr}&mealPeriod=${mealPeriod}`)
       .then(res => res.ok ? res.json() : null)

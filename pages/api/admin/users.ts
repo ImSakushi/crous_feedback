@@ -30,6 +30,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       res.status(500).json({ error: "Erreur lors de la récupération des utilisateurs" });
     }
+  } else if (req.method === 'POST') {
+    const { username, password, role } = req.body;
+    if (!username || !password || !role) {
+      return res.status(400).json({ error: "Les champs username, password et role sont requis" });
+    }
+    try {
+      const result = await client.query(
+        'INSERT INTO admins (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
+        [username, password, role]
+      );
+      res.status(201).json({ message: "Utilisateur créé", user: result.rows[0] });
+    } catch (error) {
+      res.status(500).json({ error: "Erreur lors de la création de l'utilisateur" });
+    }
   } else if (req.method === 'PUT') {
     const { id, username, password, role } = req.body;
     if (!id || !username || !role) {

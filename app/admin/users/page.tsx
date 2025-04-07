@@ -15,6 +15,11 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  
+  // États pour la création d'un nouvel utilisateur
+  const [newUsername, setNewUsername] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState('admin');
 
   useEffect(() => {
     fetchUsers();
@@ -66,9 +71,37 @@ export default function UserManagement() {
     }
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: newUsername,
+          password: newUserPassword,
+          role: newUserRole
+        }),
+      });
+      if (res.ok) {
+        alert("Nouvel utilisateur créé");
+        setNewUsername('');
+        setNewUserPassword('');
+        setNewUserRole('admin');
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Erreur lors de la création de l'utilisateur");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1>Gestion des Utilisateurs</h1>
+      
       {loading ? (
         <p>Chargement...</p>
       ) : (
@@ -97,6 +130,7 @@ export default function UserManagement() {
               ))}
             </tbody>
           </table>
+
           {editUser && (
             <div style={{ marginTop: '20px' }}>
               <h2>Modifier l'utilisateur</h2>
@@ -138,6 +172,46 @@ export default function UserManagement() {
               </button>
             </div>
           )}
+          
+          {/* Formulaire de création d'un nouvel utilisateur placé en dessous du tableau */}
+          <div style={{ marginTop: '40px' }}>
+            <h2>Créer un nouvel utilisateur</h2>
+            <form onSubmit={handleCreateUser}>
+              <FormSection title="Nouvel Utilisateur" icon={<span role="img" aria-label="utilisateur">👤</span>}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Nom d'utilisateur :</label>
+                  <input 
+                    type="text" 
+                    value={newUsername} 
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Mot de passe :</label>
+                  <input 
+                    type="password" 
+                    value={newUserPassword} 
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Rôle :</label>
+                  <select 
+                    value={newUserRole} 
+                    onChange={(e) => setNewUserRole(e.target.value)}
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="superadmin">Superadmin</option>
+                  </select>
+                </div>
+              </FormSection>
+              <button type="submit" className={styles.submitButton}>
+                Créer l'utilisateur
+              </button>
+            </form>
+          </div>
         </>
       )}
     </div>

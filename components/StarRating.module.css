@@ -31,7 +31,7 @@
   }
 
   .disabledStar {
-    color: #ccc; /* Couleur grisée */
+    color: #fff0f0; /* Couleur grisée */
     font-size: 24px;
     margin: 4px;
     border-radius: 4px;
