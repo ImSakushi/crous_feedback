@@ -17,6 +17,12 @@ const client = new Client({
 client.connect();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Gestion de la requête OPTIONS (prévol)
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   // Vérification que seul un superadmin peut accéder
   try {
     await verifySuperadmin(req);
@@ -37,7 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Les champs username, password et role sont requis" });
     }
     try {
-      // Hachage du mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await client.query(
         'INSERT INTO admins (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
@@ -54,7 +59,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     try {
       if (password) {
-        // Hachage du nouveau mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await client.query(
           'UPDATE admins SET username = $1, password = $2, role = $3 WHERE id = $4 RETURNING id, username, role',

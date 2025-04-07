@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import styles from '../admin.module.css'; // Réutilisation des styles du panel admin
-import FormSection from '@/components/FormSection';
+import styles from '../admin.module.css';
+import { useRouter } from 'next/navigation';
 
 interface AdminUser {
   id: number;
@@ -13,13 +13,7 @@ interface AdminUser {
 export default function UserManagement() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editUser, setEditUser] = useState<AdminUser | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  
-  // États pour la création d'un nouvel utilisateur
-  const [newUsername, setNewUsername] = useState('');
-  const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserRole, setNewUserRole] = useState('admin');
+  const router = useRouter();
 
   useEffect(() => {
     fetchUsers();
@@ -40,58 +34,18 @@ export default function UserManagement() {
     }
   };
 
-  const handleEdit = (user: AdminUser) => {
-    setEditUser(user);
-    setNewPassword('');
-  };
-
-  const handleSave = async () => {
-    if (!editUser) return;
+  const handleDelete = async (id: number) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) return;
     try {
-      const res = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: editUser.id,
-          username: editUser.username,
-          role: editUser.role,
-          password: newPassword // Si vide, le backend n'actualisera pas le mot de passe
-        }),
+      const res = await fetch(`/api/admin/users?id=${id}`, {
+        method: 'DELETE',
       });
       if (res.ok) {
-        alert('Utilisateur mis à jour');
-        setEditUser(null);
+        alert('Utilisateur supprimé');
         fetchUsers();
       } else {
         const err = await res.json();
-        alert(err.error || 'Erreur lors de la mise à jour');
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: newUsername,
-          password: newUserPassword,
-          role: newUserRole
-        }),
-      });
-      if (res.ok) {
-        alert("Nouvel utilisateur créé");
-        setNewUsername('');
-        setNewUserPassword('');
-        setNewUserRole('admin');
-        fetchUsers();
-      } else {
-        const err = await res.json();
-        alert(err.error || "Erreur lors de la création de l'utilisateur");
+        alert(err.error || 'Erreur lors de la suppression');
       }
     } catch (e) {
       console.error(e);
@@ -101,7 +55,6 @@ export default function UserManagement() {
   return (
     <div className={styles.container}>
       <h1>Gestion des Utilisateurs</h1>
-      
       {loading ? (
         <p>Chargement...</p>
       ) : (
@@ -122,7 +75,11 @@ export default function UserManagement() {
                   <td>{user.username}</td>
                   <td>{user.role}</td>
                   <td>
-                    <button onClick={() => handleEdit(user)} className={styles.submitButton}>
+                    <button 
+                      onClick={() => router.push(`/admin/users/edit/${user.id}`)} 
+                      className={styles.submitButton}
+                      style={{ marginRight: '10px' }}
+                    >
                       Modifier
                     </button>
                   </td>
@@ -130,88 +87,6 @@ export default function UserManagement() {
               ))}
             </tbody>
           </table>
-
-          {editUser && (
-            <div style={{ marginTop: '20px' }}>
-              <h2>Modifier l'utilisateur</h2>
-              <FormSection title="Informations Utilisateur" icon={<span role="img" aria-label="utilisateur">👤</span>}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Nom d'utilisateur :</label>
-                  <input 
-                    type="text" 
-                    value={editUser.username} 
-                    onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Rôle :</label>
-                  <select 
-                    value={editUser.role} 
-                    onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Superadmin</option>
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Nouveau mot de passe (laisser vide pour ne pas changer) :
-                  </label>
-                  <input 
-                    type="password" 
-                    value={newPassword} 
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </div>
-              </FormSection>
-              <button onClick={handleSave} className={styles.submitButton}>
-                Sauvegarder
-              </button>
-              <button onClick={() => setEditUser(null)} style={{ marginLeft: '10px' }}>
-                Annuler
-              </button>
-            </div>
-          )}
-          
-          {/* Formulaire de création d'un nouvel utilisateur placé en dessous du tableau */}
-          <div style={{ marginTop: '40px' }}>
-            <h2>Créer un nouvel utilisateur</h2>
-            <form onSubmit={handleCreateUser}>
-              <FormSection title="Nouvel Utilisateur" icon={<span role="img" aria-label="utilisateur">👤</span>}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Nom d'utilisateur :</label>
-                  <input 
-                    type="text" 
-                    value={newUsername} 
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Mot de passe :</label>
-                  <input 
-                    type="password" 
-                    value={newUserPassword} 
-                    onChange={(e) => setNewUserPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Rôle :</label>
-                  <select 
-                    value={newUserRole} 
-                    onChange={(e) => setNewUserRole(e.target.value)}
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Superadmin</option>
-                  </select>
-                </div>
-              </FormSection>
-              <button type="submit" className={styles.submitButton}>
-                Créer l'utilisateur
-              </button>
-            </form>
-          </div>
         </>
       )}
     </div>
