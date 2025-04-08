@@ -2,8 +2,7 @@
 
 **rufeedback** est une application web de feedback pour les repas du Resto U. Ce projet, construit avec [Next.js](https://nextjs.org) et TypeScript, permet aux utilisateurs de donner leur avis sur les repas (entrée, plat, dessert) et aux administrateurs de gérer les menus ainsi que de visualiser des statistiques détaillées.
 
-![Screenshot](./screenshot.png)  
-*(Ajoutez ici une capture d’écran ou un GIF démontrant l’application)*
+<img width="658" alt="image" src="https://github.com/user-attachments/assets/f8e55d3e-6953-4113-b79a-a1dc6faaa054" />
 
 ---
 
