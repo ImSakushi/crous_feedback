@@ -1,3 +1,7 @@
+/* =========================== */
+/* Styles existants (Feedback) */
+/* =========================== */
+
 .page {
   --gray-rgb: 0, 0, 0;
   --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
@@ -107,6 +111,7 @@ a.secondary {
 .footer img {
   flex-shrink: 0;
 }
+
 .textareaContainer {
   display: flex;
   justify-content: flex-start;
@@ -123,7 +128,6 @@ a.secondary {
   transition: box-shadow 0.3s ease;
   font-family: var(--font-marianne); /* Utilisation de la police Marianne */
 }
-
 
 .textarea:focus {
   outline: none;
@@ -148,17 +152,17 @@ a.secondary {
   width: 33%;
 }
 
-  .container {
-    max-width: 800px;
-    margin: 20px 0 20px 20px;
-    padding: 20px;
-    text-align: left;
-    justify-self: start;
-    align-self: start;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.container {
+  max-width: 800px;
+  margin: 20px 0 20px 20px;
+  padding: 20px;
+  text-align: left;
+  justify-self: start;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
 .radioGroup {
   display: flex;
@@ -277,4 +281,239 @@ a.secondary {
     margin-right: auto;
     padding: 20px;
   }
+}
+
+/* =========================== */
+/* Nouvelles règles pour la page d'accueil */
+/* =========================== */
+
+/* Conteneur global de la page d'accueil */
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--font-marianne), sans-serif;
+}
+
+/* Header / Barre supérieure */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ff5e5b; /* Couleur d'exemple */
+  padding: 1rem 2rem;
+  width: 100%;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  height: 48px;
+  width: auto;
+}
+
+.discoTitle {
+  font-size: 1.5rem;
+  color: #fff;
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.navLink {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  transition: opacity 0.3s;
+}
+
+.navLink:hover {
+  opacity: 0.8;
+}
+
+/* Section "Qui sommes-nous ?" */
+.aboutSection {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  width: 100%;
+  text-align: left;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.sectionText {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #555;
+}
+
+/* Section "Repas du jour" */
+.menuSection {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+}
+
+.menuInfo {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.menuGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.menuBox {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.menuSubTitle {
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.dishList {
+  list-style-type: disc;
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #555;
+}
+
+.buttonContainer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.noteButton {
+  background-color: #ff5e5b; /* Même couleur que le header */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.noteButton:hover {
+  background-color: #e64e4b;
+}
+
+/* Section "Infos pratiques" */
+.infoSection {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  width: 100%;
+}
+
+.infoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.infoItem {
+  flex: 1;
+  min-width: 200px;
+  max-width: 240px;
+  text-align: center;
+}
+
+.infoIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.5rem;
+}
+
+/* Section "D'où viennent vos aliments ?" */
+.alimentsSection {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+}
+
+.alimentsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.alimentItem {
+  flex: 1;
+  min-width: 200px;
+  max-width: 240px;
+  text-align: center;
+}
+
+.alimentIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.5rem;
+}
+
+/* Section "Préparation des plats" */
+.preparationSection {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  width: 100%;
+}
+
+.preparationGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.prepItem {
+  flex: 1;
+  min-width: 200px;
+  max-width: 240px;
+  text-align: center;
+}
+
+.prepIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.5rem;
+}
+
+/* Footer de la page d'accueil */
+.footer {
+  margin-top: auto; /* Positionné en bas */
+  padding: 1rem;
+  background-color: #ff5e5b;
+  text-align: center;
+  width: 100%;
+}
+
+.footerText {
+  color: #fff;
+  font-size: 0.9rem;
 }
