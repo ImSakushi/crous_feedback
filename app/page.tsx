@@ -57,7 +57,7 @@ export default function HomePage() {
             alt="Logo Crous"
             className={styles.logo}
           />
-          <h1 className={styles.discoTitle}>Disco-Table</h1>
+          <h1 className={styles.discuTitle}>Discu-Table</h1>
         </div>
         <nav className={styles.nav}>
           <Link href="/" className={styles.navLink}>
@@ -70,7 +70,7 @@ export default function HomePage() {
       <section className={styles.aboutSection}>
         <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
         <p className={styles.sectionText}>
-          Disco-Table est une initiative du Crous qui permet aux étudiants
+          Discu-Table est une initiative du Crous qui permet aux étudiants
           de découvrir et d’évaluer les repas, tout en offrant des informations
           sur l’origine et la préparation de chaque plat.
         </p>
@@ -219,7 +219,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
-          © {new Date().getFullYear()} Disco-Table - Tous droits réservés
+          © {new Date().getFullYear()} Discu-Table
         </p>
       </footer>
     </div>

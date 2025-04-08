@@ -14,6 +14,7 @@ interface Menu {
   starters: string[];
   main_courses: string[];
   desserts?: string[];
+  extra?: string; // Nouvelle propriété pour les informations "Extra"
 }
 
 export default function AdminPanel() {
@@ -29,6 +30,7 @@ export default function AdminPanel() {
   const [starters, setStarters] = useState<string[]>(['']);
   const [mainCourses, setMainCourses] = useState<string[]>(['']);
   const [desserts, setDesserts] = useState<string[]>(['']); // Nouvel état pour les desserts
+  const [extra, setExtra] = useState(''); // Nouvel état pour la partie "Extra"
   const [message, setMessage] = useState('');
 
   // États des statistiques (inchangés)
@@ -54,7 +56,7 @@ export default function AdminPanel() {
     fetchCurrentAdmin();
   }, []);
 
-  // Récupération du menu (mise à jour pour inclure les desserts)
+  // Récupération du menu (mise à jour pour inclure les desserts et la partie extra)
   useEffect(() => {
     async function fetchMenuData() {
       if (!menuDate) {
@@ -62,6 +64,7 @@ export default function AdminPanel() {
         setStarters(['']);
         setMainCourses(['']);
         setDesserts(['']);
+        setExtra('');
         return;
       }
       try {
@@ -71,12 +74,14 @@ export default function AdminPanel() {
           setMenu(data);
           setStarters(data.starters);
           setMainCourses(data.main_courses);
-          setDesserts(data.desserts || ['']); // Récupération des desserts
+          setDesserts(data.desserts || ['']);
+          setExtra(data.extra || '');
         } else {
           setMenu(null);
           setStarters(['']);
           setMainCourses(['']);
           setDesserts(['']);
+          setExtra('');
         }
       } catch (error) {
         console.error(error);
@@ -105,7 +110,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Nouvelle fonction pour gérer les desserts
+  // Gestion des desserts
   const handleDessertInputChange = (index: number, value: string) => {
     const newDesserts = [...desserts];
     newDesserts[index] = value;
@@ -115,7 +120,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Ajout d'un menu (mise à jour pour inclure desserts)
+  // Ajout d'un menu (mise à jour pour inclure desserts et extra)
   const handleAddMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const filteredStarters = starters.filter(s => s.trim() !== '');
@@ -132,6 +137,7 @@ export default function AdminPanel() {
           starters: filteredStarters,
           mainCourses: filteredMainCourses,
           desserts: filteredDesserts, // Envoi des desserts
+          extra, // Envoi de la partie "Extra"
         }),
       });
       if (res.ok) {
@@ -147,7 +153,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Modification d'un menu existant (mise à jour pour inclure desserts)
+  // Modification d'un menu existant (mise à jour pour inclure desserts et extra)
   const handleSaveMenu = async () => {
     if (!menu || !menu.id) return;
     try {
@@ -158,7 +164,8 @@ export default function AdminPanel() {
           id: menu.id,
           starters,
           mainCourses,
-          desserts, // Envoi des desserts pour la mise à jour
+          desserts, // Envoi des desserts
+          extra,     // Envoi de la partie "Extra"
         }),
       });
       if (res.ok) {
@@ -313,25 +320,25 @@ export default function AdminPanel() {
       <button onClick={handleLogout} className={styles.logoutButton}>
         Déconnexion
       </button>
-      
+
       <h1>Panel Admin - Gestion des menus et Statistiques</h1>
-      
+
       {/* Onglets pour basculer entre "Menus" et "Statistiques" */}
       <div className={styles.tabs}>
-        <button 
+        <button
           className={activeTab === 'menus' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('menus')}
         >
           Menus
         </button>
-        <button 
+        <button
           className={activeTab === 'statistiques' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('statistiques')}
         >
           Statistiques
         </button>
         {currentAdmin?.role === 'superadmin' && (
-          <button 
+          <button
             onClick={() => router.push('/admin/users')}
             className={styles.tab}
           >
@@ -346,16 +353,16 @@ export default function AdminPanel() {
           <div className={styles.timeline}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Choisissez la date :</label>
-              <input 
-                type="date" 
-                value={menuDate} 
+              <input
+                type="date"
+                value={menuDate}
                 onChange={(e) => setMenuDate(e.target.value)}
               />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Repas :</label>
-              <select 
-                value={menuMealPeriod} 
+              <select
+                value={menuMealPeriod}
                 onChange={(e) => setMenuMealPeriod(e.target.value)}
               >
                 <option value="midi">Midi</option>
@@ -370,9 +377,9 @@ export default function AdminPanel() {
               <h3>Modifier le menu du {menuMealPeriod} du {new Date(menu.date).toLocaleDateString('fr-FR')}</h3>
               <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
                 {starters.map((starter, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={starter}
                     onChange={(e) => handleStarterInputChange(index, e.target.value)}
                     placeholder={`Entrée ${index + 1}`}
@@ -382,9 +389,9 @@ export default function AdminPanel() {
               </FormSection>
               <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
                 {mainCourses.map((course, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={course}
                     onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
                     placeholder={`Plat ${index + 1}`}
@@ -393,18 +400,27 @@ export default function AdminPanel() {
                   />
                 ))}
               </FormSection>
-              {/* Nouvelle section Desserts */}
               <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
                 {desserts.map((dessert, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={dessert}
                     onChange={(e) => handleDessertInputChange(index, e.target.value)}
                     placeholder={`Dessert ${index + 1}`}
                     className={styles.dishInput}
                   />
                 ))}
+              </FormSection>
+              {/* Nouvelle section Extra avec le même style que dishInput */}
+              <FormSection title="Extra" icon={<span role="img" aria-label="extra">✨</span>}>
+                <textarea
+                  value={extra}
+                  onChange={(e) => setExtra(e.target.value)}
+                  placeholder="Ajoutez des informations supplémentaires ici..."
+                  className={styles.dishInput}
+                  rows={3}
+                />
               </FormSection>
               <button onClick={handleSaveMenu} className={styles.submitButton}>
                 Sauvegarder
@@ -417,9 +433,9 @@ export default function AdminPanel() {
               <h3>Ajouter un nouveau menu</h3>
               <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
                 {starters.map((starter, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={starter}
                     onChange={(e) => handleStarterInputChange(index, e.target.value)}
                     placeholder={`Entrée ${index + 1}`}
@@ -429,9 +445,9 @@ export default function AdminPanel() {
               </FormSection>
               <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
                 {mainCourses.map((course, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={course}
                     onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
                     placeholder={`Plat ${index + 1}`}
@@ -440,18 +456,26 @@ export default function AdminPanel() {
                   />
                 ))}
               </FormSection>
-              {/* Section Desserts pour création */}
               <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
                 {desserts.map((dessert, index) => (
-                  <input 
+                  <input
                     key={index}
-                    type="text" 
+                    type="text"
                     value={dessert}
                     onChange={(e) => handleDessertInputChange(index, e.target.value)}
                     placeholder={`Dessert ${index + 1}`}
                     className={styles.dishInput}
                   />
                 ))}
+              </FormSection>
+              {/* Section Extra pour ajout */}
+              <FormSection title="Extra" icon={<span role="img" aria-label="extra">✨</span>}>
+                <input
+                  value={extra}
+                  onChange={(e) => setExtra(e.target.value)}
+                  placeholder="Extra 1"
+                  className={styles.dishInput}
+                />
               </FormSection>
               <button type="submit" className={styles.submitButton}>
                 Ajouter le menu
@@ -496,7 +520,8 @@ export default function AdminPanel() {
                 {stats.averages.avg_main_course ? parseFloat(stats.averages.avg_main_course).toFixed(1) : '-'} | Goût{' '}
                 {stats.averages.avg_taste ? parseFloat(stats.averages.avg_taste).toFixed(1) : '-'} | Portion{' '}
                 {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'} | Dessert{' '}
-                {stats.averages.avg_dessert ? parseFloat(stats.averages.avg_dessert).toFixed(1) : '-'}
+                {stats.averages.avg_dessert ? parseFloat(stats.averages.avg_dessert).toFixed(1) : '-'} | Extra{' '}
+                {stats.averages.avg_extra ? parseFloat(stats.averages.avg_extra).toFixed(1) : '-'}
               </p>
 
               {/* Graphique linéaire : Evolution des feedbacks */}
@@ -515,14 +540,7 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={lineChartOptions}
                 />
               </div>
 
@@ -541,18 +559,11 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={pieChartOptions}
                 />
               </div>
 
-              {/* Graphique groupé en barres : Distribution des notes (pour tous les critères) */}
+              {/* Graphique groupé en barres : Distribution des notes */}
               <div className={styles.chartContainer}>
                 <h3>Distribution des notes</h3>
                 <Bar
@@ -586,14 +597,7 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={barChartOptions}
                 />
               </div>
 
@@ -611,14 +615,7 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={barChartOptions}
                 />
               </div>
               <div className={styles.chartContainer}>
@@ -634,14 +631,7 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={barChartOptions}
                 />
               </div>
               <div className={styles.chartContainer}>
@@ -657,14 +647,7 @@ export default function AdminPanel() {
                       },
                     ],
                   }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
+                  options={barChartOptions}
                 />
               </div>
             </div>
