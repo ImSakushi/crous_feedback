@@ -9,6 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mainCourseRating, 
       tasteRating, 
       portionRating, 
+      dessertRating,
       finishedPlate, 
       notEatenReason,
       comment, 
@@ -21,17 +22,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           main_course_rating, 
           taste_rating, 
           portion_rating, 
+          dessert_rating,
           finished_plate, 
           not_eaten_reason,
           comment, 
           date
         )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
          [
           appetizerRating, 
           mainCourseRating, 
           tasteRating, 
           portionRating, 
+          dessertRating,
           finishedPlate, 
           notEatenReason,
           comment, 

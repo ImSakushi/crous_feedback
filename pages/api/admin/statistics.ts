@@ -24,13 +24,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
     const total = totalResult.rows[0].total;
 
-    // Moyennes des notes
+    // Moyennes des notes, ajout de dessert_rating
     const averagesResult = await pool.query(
       `SELECT 
          AVG(appetizer_rating) AS avg_appetizer, 
          AVG(main_course_rating) AS avg_main_course, 
          AVG(taste_rating) AS avg_taste, 
-         AVG(portion_rating) AS avg_portion 
+         AVG(portion_rating) AS avg_portion,
+         AVG(dessert_rating) AS avg_dessert
        FROM feedback ${filterClause}`,
       params
     );
@@ -81,6 +82,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        ORDER BY portion_rating`,
       params
     );
+    const distDessertResult = await pool.query(
+      `SELECT dessert_rating as rating, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY dessert_rating
+       ORDER BY dessert_rating`,
+      params
+    );
 
     res.status(200).json({
       total,
@@ -92,6 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         mainCourse: distMainCourseResult.rows,
         taste: distTasteResult.rows,
         portion: distPortionResult.rows,
+        dessert: distDessertResult.rows,
       },
     });
   } catch (error) {

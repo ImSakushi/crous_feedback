@@ -38,7 +38,6 @@ export default function MealFeedbackPage() {
   const [chosenDessert, setChosenDessert] = useState<string | null>(null);
   const [dessertRating, setDessertRating] = useState(0);
 
-  const [noAppetizer, setNoAppetizer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[]; desserts?: string[] } | null>(null);
@@ -145,7 +144,7 @@ export default function MealFeedbackPage() {
       <h1 style={{ textAlign: 'center' }}>Ta contribution sur le repas du jour</h1>
 
       <FormSection
-        title="Quel entrée as-tu choisis ?"
+        title="Quelle entrée as-tu choisie ?"
         icon={<span role="img" aria-label="entrée">🍽️</span>}
         subtitle="Sélectionne ton entrée parmi les options"
       >
@@ -180,48 +179,21 @@ export default function MealFeedbackPage() {
         </div>
       </FormSection>
       
-      <FormSection
-        title="Note l'entrée d'aujourd'hui"
-        icon={<span role="img" aria-label="salade">🥗</span>}
-        subtitle="Comment as-tu trouvé l'entrée ?"
-      >
-        <StarRating 
-          rating={appetizerRating} 
-          onRatingChange={setAppetizerRating} 
-          disabled={noAppetizer} 
-        />
-        <button
-          onClick={() => {
-            if (!noAppetizer) {
-              setNoAppetizer(true);
-              setAppetizerRating(0);
-            } else {
-              setNoAppetizer(false);
-            }
-          }}
-          style={{
-            backgroundColor: noAppetizer ? 'white' : 'red',
-            color: noAppetizer ? 'red' : 'white',
-            border: noAppetizer ? '2px solid red' : 'none',
-            borderRadius: '9999px',
-            padding: '8px 16px',
-            marginTop: '16px',
-            cursor: 'pointer',
-            display: 'block',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            fontFamily: 'var(--font-marianne)',
-            transition: 'background-color 0.3s ease, color 0.3s ease, border 0.3s ease, opacity 0.3s ease',
-          }}
+      {chosenStarter !== null && ((chosenStarter === "other" && customStarter.trim() !== "") || chosenStarter !== "other") && (
+        <FormSection
+          title="Note l'entrée d'aujourd'hui"
+          icon={<span role="img" aria-label="salade">🥗</span>}
+          subtitle="Comment as-tu trouvé l'entrée ?"
         >
-          Je n&apos;ai pas pris d&apos;entrée
-        </button>
-      </FormSection>
+          <StarRating 
+            rating={appetizerRating} 
+            onRatingChange={setAppetizerRating} 
+          />
+        </FormSection>
+      )}
 
       <FormSection
-        title="Quel plat as-tu choisis ?"
+        title={<>Quel plat as-tu choisi ? <span style={{ color: 'red' }}>*</span></>}
         icon={<span role="img" aria-label="plat">🍽️</span>}
         subtitle="Sélectionne ton plat parmi les options"
       >
@@ -257,7 +229,7 @@ export default function MealFeedbackPage() {
       </FormSection>
 
       <FormSection
-        title="Note le plat principal"
+        title={<>Note le plat principal <span style={{ color: 'red' }}>*</span></>}
         icon={<span role="img" aria-label="soupe">🍜</span>}
         subtitle="Comment as-tu trouvé le plat principal ?"
       >
@@ -265,7 +237,7 @@ export default function MealFeedbackPage() {
       </FormSection>
 
       <FormSection
-        title="Et le goût général ?"
+        title={<>Et le goût général ? <span style={{ color: 'red' }}>*</span></>}
         icon={<span role="img" aria-label="utensils">🍴</span>}
         subtitle="Le repas était-il bien assaisonné et équilibré ?"
       >
@@ -273,7 +245,7 @@ export default function MealFeedbackPage() {
       </FormSection>
 
       <FormSection
-        title="La quantité servie"
+        title={<>La quantité servie <span style={{ color: 'red' }}>*</span></>}
         icon={<span role="img" aria-label="sandwich">🥪</span>}
         subtitle="Les portions étaient-elles suffisantes ?"
       >
@@ -281,7 +253,7 @@ export default function MealFeedbackPage() {
       </FormSection>
 
       <FormSection
-        title="As-tu fini ton assiette ?"
+        title={<>As-tu fini ton assiette ? <span style={{ color: 'red' }}>*</span></>}
         icon={<span role="img" aria-label="trash">🗑️</span>}
       >
         <div className={styles.radioGroup}>

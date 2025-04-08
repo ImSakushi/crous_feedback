@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './FormSection.module.css';
 
 interface FormSectionProps {
-  title: string;
+  title: React.ReactNode; // Changement de 'string' à 'React.ReactNode' pour accepter des éléments JSX
   icon: React.ReactNode;
   subtitle?: string;
   children: React.ReactNode;

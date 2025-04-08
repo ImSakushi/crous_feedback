@@ -12,7 +12,7 @@ interface AdminUser {
 }
 
 export default function EditUser() {
-  const { id } = useParams();
+  const { id } = useParams() as { id: string };
   const router = useRouter();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [username, setUsername] = useState('');
