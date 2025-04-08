@@ -1,25 +1,21 @@
+// pages/api/admin/menu/update.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PUT') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  const { id, mainCourses, starters } = req.body;
-  if (!id || !mainCourses || !starters) {
-    return res.status(400).json({ error: 'Id, mainCourses et starters sont requis' });
+  const { id, starters, mainCourses, desserts } = req.body;
+  if (!id || !starters || !mainCourses || desserts === undefined) {
+    return res.status(400).json({ error: 'Id, starters, mainCourses et desserts sont requis' });
   }
 
   try {
-    const result = await client.query(
-      'UPDATE menus SET main_courses = $1, starters = $2 WHERE id = $3 RETURNING *',
-      [mainCourses, starters, id]
+    const result = await pool.query(
+      'UPDATE menus SET starters = $1, main_courses = $2, desserts = $3 WHERE id = $4 RETURNING *',
+      [starters, mainCourses, desserts, id]
     );
     res.status(200).json({ message: 'Menu mis à jour', menu: result.rows[0] });
   } catch (error) {

@@ -1,12 +1,6 @@
 // pages/api/feedback.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -21,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       date 
     } = req.body;
     try {
-      const result = await client.query(
+      const result = await pool.query(
         `INSERT INTO feedback (
           appetizer_rating, 
           main_course_rating, 
@@ -51,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } else if (req.method === 'GET') {
     try {
-      const result = await client.query(`SELECT * FROM feedback ORDER BY date DESC`);
+      const result = await pool.query(`SELECT * FROM feedback ORDER BY date DESC`);
       res.status(200).json(result.rows);
     } catch (error) {
       console.error(error);

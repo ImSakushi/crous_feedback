@@ -1,10 +1,6 @@
+// pages/api/admin/menus.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -12,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   
   try {
-    const result = await client.query('SELECT * FROM menus ORDER BY date DESC');
+    const result = await pool.query('SELECT * FROM menus ORDER BY date DESC');
     res.status(200).json(result.rows);
   } catch (error) {
     console.error(error);

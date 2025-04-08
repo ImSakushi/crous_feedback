@@ -34,26 +34,15 @@ export default function UserManagement() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) return;
-    try {
-      const res = await fetch(`/api/admin/users?id=${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        alert('Utilisateur supprimé');
-        fetchUsers();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Erreur lors de la suppression');
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ position: 'relative' }}>
+      {/* Bouton de retour en haut à gauche */}
+      <p 
+        className={styles.backLink}
+        onClick={() => router.push('/admin')}
+      >
+        ← Retour
+      </p>
       <h1>Gestion des Utilisateurs</h1>
       {loading ? (
         <p>Chargement...</p>

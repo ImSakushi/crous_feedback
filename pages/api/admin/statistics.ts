@@ -1,10 +1,6 @@
+// pages/api/admin/statistics.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -22,14 +18,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Total des feedbacks
-    const totalResult = await client.query(
-      `SELECT COUNT(*) AS total FROM feedback ${filterClause}`, 
+    const totalResult = await pool.query(
+      `SELECT COUNT(*) AS total FROM feedback ${filterClause}`,
       params
     );
     const total = totalResult.rows[0].total;
 
     // Moyennes des notes
-    const averagesResult = await client.query(
+    const averagesResult = await pool.query(
       `SELECT 
          AVG(appetizer_rating) AS avg_appetizer, 
          AVG(main_course_rating) AS avg_main_course, 
@@ -40,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Répartition selon finished_plate
-    const finishedResult = await client.query(
+    const finishedResult = await pool.query(
       `SELECT finished_plate, COUNT(*) AS count 
        FROM feedback ${filterClause} 
        GROUP BY finished_plate`,
@@ -48,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Groupement par date (pour le graphique linéaire)
-    const groupByDateResult = await client.query(
+    const groupByDateResult = await pool.query(
       `SELECT DATE(date) as feedback_date, COUNT(*) as count 
        FROM feedback ${filterClause} 
        GROUP BY feedback_date 
@@ -57,28 +53,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Distribution des notes pour chaque critère
-    const distAppetizerResult = await client.query(
+    const distAppetizerResult = await pool.query(
       `SELECT appetizer_rating as rating, COUNT(*) as count
        FROM feedback ${filterClause}
        GROUP BY appetizer_rating
        ORDER BY appetizer_rating`,
       params
     );
-    const distMainCourseResult = await client.query(
+    const distMainCourseResult = await pool.query(
       `SELECT main_course_rating as rating, COUNT(*) as count
        FROM feedback ${filterClause}
        GROUP BY main_course_rating
        ORDER BY main_course_rating`,
       params
     );
-    const distTasteResult = await client.query(
+    const distTasteResult = await pool.query(
       `SELECT taste_rating as rating, COUNT(*) as count
        FROM feedback ${filterClause}
        GROUP BY taste_rating
        ORDER BY taste_rating`,
       params
     );
-    const distPortionResult = await client.query(
+    const distPortionResult = await pool.query(
       `SELECT portion_rating as rating, COUNT(*) as count
        FROM feedback ${filterClause}
        GROUP BY portion_rating

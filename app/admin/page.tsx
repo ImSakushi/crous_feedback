@@ -8,42 +8,37 @@ import 'chart.js/auto';
 import { useRouter } from 'next/navigation';
 
 interface Menu {
-  id: number;
+  id?: number;
   date: string;
   meal_period: string;
   starters: string[];
   main_courses: string[];
+  desserts?: string[];
 }
 
 export default function AdminPanel() {
-  // Gestion des onglets
-  const [activeTab, setActiveTab] = useState<'ajouter' | 'plats' | 'statistiques'>('ajouter');
-  const [currentAdmin, setCurrentAdmin] = useState<{ id: number; username: string; role: string } | null>(null);
   const router = useRouter();
 
-  // États pour l'onglet "Ajouter un menu"
-  const [date, setDate] = useState('');
-  const [mealPeriod, setMealPeriod] = useState('midi');
+  // Gestion des onglets
+  const [activeTab, setActiveTab] = useState<'menus' | 'statistiques'>('menus');
+
+  // États pour le menu
+  const [menuDate, setMenuDate] = useState('');
+  const [menuMealPeriod, setMenuMealPeriod] = useState('midi');
+  const [menu, setMenu] = useState<Menu | null>(null);
   const [starters, setStarters] = useState<string[]>(['']);
   const [mainCourses, setMainCourses] = useState<string[]>(['']);
+  const [desserts, setDesserts] = useState<string[]>(['']); // Nouvel état pour les desserts
   const [message, setMessage] = useState('');
 
-  // États pour l'onglet "Plats" (édition de menus)
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedMealPeriod, setSelectedMealPeriod] = useState('midi');
-  const [menu, setMenu] = useState<Menu | null>(null);
-  const [menuLoading, setMenuLoading] = useState(false);
-  const [updatedStarters, setUpdatedStarters] = useState<string[]>([]);
-  const [updatedMainCourses, setUpdatedMainCourses] = useState<string[]>([]);
-  const [updateMessage, setUpdateMessage] = useState('');
-
-  // États pour l'onglet "Statistiques"
+  // États des statistiques (inchangés)
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
-  // Récupérer les infos de l'admin connecté
+  // Récupérer l'admin connecté
+  const [currentAdmin, setCurrentAdmin] = useState<{ id: number; username: string; role: string } | null>(null);
   useEffect(() => {
     async function fetchCurrentAdmin() {
       try {
@@ -59,110 +54,39 @@ export default function AdminPanel() {
     fetchCurrentAdmin();
   }, []);
 
-  // Fonction de formatage de la date
-  function formatDate(dateStr: string): string {
-    const dateObj = new Date(dateStr);
-    const parts = dateObj.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    }).split(' ');
-    if (parts.length === 3) {
-      parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-    }
-    return parts.join(' ');
-  }
-
-  // Fonction d'ajout d'un menu
-  const handleAddMenuSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const filteredStarters = starters.filter(s => s.trim() !== '');
-    const filteredMainCourses = mainCourses.filter(s => s.trim() !== '');
-
-    const res = await fetch('/api/admin/menu', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date,
-        mealPeriod,
-        starters: filteredStarters,
-        mainCourses: filteredMainCourses,
-      }),
-    });
-    if (res.ok) {
-      setMessage('Menu ajouté avec succès');
-      setDate('');
-      setMealPeriod('midi');
-      setStarters(['']);
-      setMainCourses(['']);
-    } else {
-      setMessage("Erreur lors de l'ajout du menu");
-    }
-  };
-
-  // Fonction pour récupérer un menu existant (onglet Plats)
-  const fetchMenu = async () => {
-    if (!selectedDate) {
-      setMenu(null);
-      return;
-    }
-    setMenuLoading(true);
-    setMenu(null);
-    setUpdateMessage('');
-    try {
-      const res = await fetch(`/api/menu?date=${selectedDate}&mealPeriod=${selectedMealPeriod}`);
-      if (res.ok) {
-        const data = await res.json();
-        setMenu(data);
-        setUpdatedMainCourses(data.main_courses);
-        setUpdatedStarters(data.starters);
-      } else {
+  // Récupération du menu (mise à jour pour inclure les desserts)
+  useEffect(() => {
+    async function fetchMenuData() {
+      if (!menuDate) {
+        setMenu(null);
+        setStarters(['']);
+        setMainCourses(['']);
+        setDesserts(['']);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/menu?date=${menuDate}&mealPeriod=${menuMealPeriod}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMenu(data);
+          setStarters(data.starters);
+          setMainCourses(data.main_courses);
+          setDesserts(data.desserts || ['']); // Récupération des desserts
+        } else {
+          setMenu(null);
+          setStarters(['']);
+          setMainCourses(['']);
+          setDesserts(['']);
+        }
+      } catch (error) {
+        console.error(error);
         setMenu(null);
       }
-    } catch (error) {
-      console.error(error);
-      setMenu(null);
-    } finally {
-      setMenuLoading(false);
     }
-  };
+    fetchMenuData();
+  }, [menuDate, menuMealPeriod]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchMenu();
-    }
-  }, [selectedDate, selectedMealPeriod]);
-
-  const handleDishChange = (index: number, value: string) => {
-    const newCourses = [...updatedMainCourses];
-    newCourses[index] = value;
-    setUpdatedMainCourses(newCourses);
-  };
-
-  const handleStarterChange = (index: number, value: string) => {
-    const newStarters = [...updatedStarters];
-    newStarters[index] = value;
-    setUpdatedStarters(newStarters);
-  };
-
-  const handleSaveMenu = async () => {
-    if (!menu) return;
-    const res = await fetch('/api/admin/menu/update', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: menu.id,
-        mainCourses: updatedMainCourses,
-        starters: updatedStarters,
-      }),
-    });
-    if (res.ok) {
-      setUpdateMessage('Menu mis à jour avec succès');
-    } else {
-      setUpdateMessage('Erreur lors de la mise à jour du menu');
-    }
-  };
-
+  // Gestion des entrées et des plats
   const handleStarterInputChange = (index: number, value: string) => {
     const newStarters = [...starters];
     newStarters[index] = value;
@@ -181,7 +105,74 @@ export default function AdminPanel() {
     }
   };
 
-  // Récupération des statistiques depuis l'API
+  // Nouvelle fonction pour gérer les desserts
+  const handleDessertInputChange = (index: number, value: string) => {
+    const newDesserts = [...desserts];
+    newDesserts[index] = value;
+    setDesserts(newDesserts);
+    if (index === newDesserts.length - 1 && value.trim() !== '') {
+      setDesserts([...newDesserts, '']);
+    }
+  };
+
+  // Ajout d'un menu (mise à jour pour inclure desserts)
+  const handleAddMenuSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const filteredStarters = starters.filter(s => s.trim() !== '');
+    const filteredMainCourses = mainCourses.filter(s => s.trim() !== '');
+    const filteredDesserts = desserts.filter(d => d.trim() !== '');
+
+    try {
+      const res = await fetch('/api/admin/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: menuDate,
+          mealPeriod: menuMealPeriod,
+          starters: filteredStarters,
+          mainCourses: filteredMainCourses,
+          desserts: filteredDesserts, // Envoi des desserts
+        }),
+      });
+      if (res.ok) {
+        setMessage('Menu ajouté avec succès');
+        const data = await res.json();
+        setMenu(data);
+      } else {
+        setMessage("Erreur lors de l'ajout du menu");
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage("Erreur lors de l'ajout du menu");
+    }
+  };
+
+  // Modification d'un menu existant (mise à jour pour inclure desserts)
+  const handleSaveMenu = async () => {
+    if (!menu || !menu.id) return;
+    try {
+      const res = await fetch('/api/admin/menu/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: menu.id,
+          starters,
+          mainCourses,
+          desserts, // Envoi des desserts pour la mise à jour
+        }),
+      });
+      if (res.ok) {
+        setMessage('Menu mis à jour avec succès');
+      } else {
+        setMessage('Erreur lors de la mise à jour du menu');
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage('Erreur lors de la mise à jour du menu');
+    }
+  };
+
+  // Gestion des statistiques
   const fetchStatistics = async () => {
     setLoadingStats(true);
     let url = '/api/admin/statistics';
@@ -204,7 +195,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Données pour le graphique linéaire (feedbacks par date)
+  // Données pour le graphique linéaire (statistiques)
   const lineChartData = {
     labels: stats ? stats.groupByDate.map((item: any) => item.feedback_date) : [],
     datasets: [
@@ -227,7 +218,7 @@ export default function AdminPanel() {
     },
   };
 
-  // Données pour le graphique en camembert (feedbacks selon finished_plate)
+  // Données pour le graphique en camembert (statistiques)
   const pieChartData = {
     labels: stats ? stats.finished.map((item: any) => item.finished_plate ? 'Tout mangé' : 'Partiellement mangé') : [],
     datasets: [
@@ -247,7 +238,7 @@ export default function AdminPanel() {
     },
   };
 
-  // Options communes pour les graphiques en barres
+  // Options communes pour les graphiques en barres (statistiques)
   const barChartOptions = {
     responsive: true,
     plugins: {
@@ -257,7 +248,7 @@ export default function AdminPanel() {
     },
   };
 
-  // Données pour les distributions de notes
+  // Données pour la distribution des notes (statistiques)
   const barChartDataAppetizer = {
     labels: stats ? stats.distribution.appetizer.map((item: any) => item.rating) : [],
     datasets: [
@@ -302,22 +293,36 @@ export default function AdminPanel() {
     ],
   };
 
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/admin/logout', { method: 'POST' });
+      if (res.ok) {
+        router.push('/admin/login');
+      } else {
+        alert('Erreur lors de la déconnexion');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ position: 'relative' }}>
+      {/* Bouton de déconnexion sticky en haut à droite */}
+      <button onClick={handleLogout} className={styles.logoutButton}>
+        Déconnexion
+      </button>
+      
       <h1>Panel Admin - Gestion des menus et Statistiques</h1>
       
+      {/* Onglets pour basculer entre "Menus" et "Statistiques" */}
       <div className={styles.tabs}>
         <button 
-          className={activeTab === 'ajouter' ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab('ajouter')}
+          className={activeTab === 'menus' ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab('menus')}
         >
-          Ajouter un menu
-        </button>
-        <button 
-          className={activeTab === 'plats' ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab('plats')}
-        >
-          Plats
+          Menus
         </button>
         <button 
           className={activeTab === 'statistiques' ? styles.activeTab : styles.tab}
@@ -335,105 +340,124 @@ export default function AdminPanel() {
         )}
       </div>
 
-      {activeTab === 'ajouter' && (
-        <form onSubmit={handleAddMenuSubmit}>
-          <FormSection title="Informations du menu" icon={<span role="img" aria-label="menu">📅</span>}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Date :</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Repas :</label>
-              <select value={mealPeriod} onChange={(e) => setMealPeriod(e.target.value)}>
-                <option value="midi">Midi</option>
-                <option value="soir">Soir</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Entrées :</label>
-              {starters.map((starter, index) => (
-                <input 
-                  key={index}
-                  type="text" 
-                  value={starter}
-                  onChange={(e) => handleStarterInputChange(index, e.target.value)}
-                  placeholder={`Entrée ${index + 1}`}
-                  className={styles.dishInput}
-                />
-              ))}
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Plats :</label>
-              {mainCourses.map((course, index) => (
-                <input 
-                  key={index}
-                  type="text" 
-                  value={course}
-                  onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
-                  placeholder={`Plat ${index + 1}`}
-                  required={index === 0}
-                  className={styles.dishInput}
-                />
-              ))}
-            </div>
-          </FormSection>
-          <button type="submit" className={styles.submitButton}>Ajouter le menu</button>
-          {message && <p>{message}</p>}
-        </form>
-      )}
-
-      {activeTab === 'plats' && (
+      {activeTab === 'menus' && (
         <div>
-          <h2>Modifier les menus</h2>
+          <h2>Gérer les menus</h2>
           <div className={styles.timeline}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Choisir la date :</label>
-              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+              <label className={styles.label}>Choisissez la date :</label>
+              <input 
+                type="date" 
+                value={menuDate} 
+                onChange={(e) => setMenuDate(e.target.value)}
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Repas :</label>
-              <select value={selectedMealPeriod} onChange={(e) => setSelectedMealPeriod(e.target.value)}>
+              <select 
+                value={menuMealPeriod} 
+                onChange={(e) => setMenuMealPeriod(e.target.value)}
+              >
                 <option value="midi">Midi</option>
                 <option value="soir">Soir</option>
               </select>
             </div>
           </div>
-          {menuLoading ? (
-            <p>Chargement...</p>
-          ) : menu ? (
+
+          {menu ? (
+            // Mode modification d'un menu existant
             <div>
-              <h3>Menu du {menu.meal_period} du {formatDate(menu.date)}</h3>
-              <div>
-                <h4>Entrées</h4>
-                {updatedStarters.map((starter, index) => (
-                  <div key={`starter-${index}`} className={styles.dishItem}>
-                    <input 
-                      type="text" 
-                      value={starter} 
-                      onChange={(e) => handleStarterChange(index, e.target.value)}
-                      className={styles.dishInput}
-                    />
-                  </div>
+              <h3>Modifier le menu du {menuMealPeriod} du {new Date(menu.date).toLocaleDateString('fr-FR')}</h3>
+              <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
+                {starters.map((starter, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={starter}
+                    onChange={(e) => handleStarterInputChange(index, e.target.value)}
+                    placeholder={`Entrée ${index + 1}`}
+                    className={styles.dishInput}
+                  />
                 ))}
-              </div>
-              <div>
-                <h4>Plats</h4>
-                {updatedMainCourses.map((dish, index) => (
-                  <div key={`dish-${index}`} className={styles.dishItem}>
-                    <input 
-                      type="text" 
-                      value={dish} 
-                      onChange={(e) => handleDishChange(index, e.target.value)}
-                      className={styles.dishInput}
-                    />
-                  </div>
+              </FormSection>
+              <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
+                {mainCourses.map((course, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={course}
+                    onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
+                    placeholder={`Plat ${index + 1}`}
+                    className={styles.dishInput}
+                    required={index === 0}
+                  />
                 ))}
-              </div>
-              <button onClick={handleSaveMenu} className={styles.submitButton}>Sauvegarder</button>
-              {updateMessage && <p>{updateMessage}</p>}
+              </FormSection>
+              {/* Nouvelle section Desserts */}
+              <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
+                {desserts.map((dessert, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={dessert}
+                    onChange={(e) => handleDessertInputChange(index, e.target.value)}
+                    placeholder={`Dessert ${index + 1}`}
+                    className={styles.dishInput}
+                  />
+                ))}
+              </FormSection>
+              <button onClick={handleSaveMenu} className={styles.submitButton}>
+                Sauvegarder
+              </button>
+              {message && <p>{message}</p>}
             </div>
           ) : (
-            <p>Aucun menu trouvé pour cette date et ce repas.</p>
+            // Mode ajout d'un nouveau menu
+            <form onSubmit={handleAddMenuSubmit}>
+              <h3>Ajouter un nouveau menu</h3>
+              <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
+                {starters.map((starter, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={starter}
+                    onChange={(e) => handleStarterInputChange(index, e.target.value)}
+                    placeholder={`Entrée ${index + 1}`}
+                    className={styles.dishInput}
+                  />
+                ))}
+              </FormSection>
+              <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
+                {mainCourses.map((course, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={course}
+                    onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
+                    placeholder={`Plat ${index + 1}`}
+                    className={styles.dishInput}
+                    required={index === 0}
+                  />
+                ))}
+              </FormSection>
+              {/* Section Desserts pour création */}
+              <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
+                {desserts.map((dessert, index) => (
+                  <input 
+                    key={index}
+                    type="text" 
+                    value={dessert}
+                    onChange={(e) => handleDessertInputChange(index, e.target.value)}
+                    placeholder={`Dessert ${index + 1}`}
+                    className={styles.dishInput}
+                  />
+                ))}
+              </FormSection>
+              <button type="submit" className={styles.submitButton}>
+                Ajouter le menu
+              </button>
+              {message && <p>{message}</p>}
+            </form>
           )}
         </div>
       )}
@@ -444,13 +468,23 @@ export default function AdminPanel() {
           <div className={styles.filterSection}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Du :</label>
-              <input type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} />
+              <input 
+                type="date" 
+                value={filterStartDate} 
+                onChange={(e) => setFilterStartDate(e.target.value)}
+              />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Au :</label>
-              <input type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} />
+              <input 
+                type="date" 
+                value={filterEndDate} 
+                onChange={(e) => setFilterEndDate(e.target.value)}
+              />
             </div>
-            <button onClick={fetchStatistics} className={styles.submitButton}>Filtrer</button>
+            <button onClick={fetchStatistics} className={styles.submitButton}>
+              Filtrer
+            </button>
           </div>
           {loadingStats ? (
             <p>Chargement des statistiques...</p>
@@ -493,4 +527,3 @@ export default function AdminPanel() {
     </div>
   );
 }
-

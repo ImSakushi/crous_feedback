@@ -1,12 +1,6 @@
 // pages/api/menu.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-
-client.connect();
+import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -20,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const result = await client.query(
+    const result = await pool.query(
       `SELECT * FROM menus WHERE date = $1 AND meal_period = $2`,
       [date, mealPeriod]
     );

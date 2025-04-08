@@ -1,6 +1,6 @@
-// app/layout.tsx
 import '../styles/globals.css';
 import { marianne } from './fonts';
+import AdminPanelButton from '@/components/AdminPanelButton';
 
 export const metadata = {
   title: 'Feedback RU',
@@ -12,6 +12,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={marianne.variable}>
       <body>
         {children}
+        {/* Bouton sticky visible si l’utilisateur est admin */}
+        <AdminPanelButton />
       </body>
     </html>
   );

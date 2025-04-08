@@ -1,5 +1,6 @@
+// pages/api/admin/users.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import pool from '@/lib/db';
 import { jwtVerify } from 'jose';
 import bcrypt from 'bcrypt';
 
@@ -10,11 +11,6 @@ async function verifySuperadmin(req: NextApiRequest) {
   const { payload } = await jwtVerify(token, secret);
   if (payload.role !== 'superadmin') throw new Error("Accès refusé");
 }
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-client.connect();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Gestion de la requête OPTIONS (prévol)
@@ -32,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   if (req.method === 'GET') {
     try {
-      const result = await client.query('SELECT id, username, role FROM admins ORDER BY username');
+      const result = await pool.query('SELECT id, username, role FROM admins ORDER BY username');
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json({ error: "Erreur lors de la récupération des utilisateurs" });
@@ -44,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await client.query(
+      const result = await pool.query(
         'INSERT INTO admins (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
         [username, hashedPassword, role]
       );
@@ -60,13 +56,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await client.query(
+        const result = await pool.query(
           'UPDATE admins SET username = $1, password = $2, role = $3 WHERE id = $4 RETURNING id, username, role',
           [username, hashedPassword, role, id]
         );
         res.status(200).json({ message: 'Utilisateur mis à jour', user: result.rows[0] });
       } else {
-        const result = await client.query(
+        const result = await pool.query(
           'UPDATE admins SET username = $1, role = $2 WHERE id = $3 RETURNING id, username, role',
           [username, role, id]
         );
@@ -81,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "L'id est requis pour la suppression" });
     }
     try {
-      const result = await client.query(
+      const result = await pool.query(
         'DELETE FROM admins WHERE id = $1 RETURNING id',
         [id]
       );

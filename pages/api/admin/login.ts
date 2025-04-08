@@ -1,17 +1,13 @@
+// pages/api/admin/login.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import pool from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 import bcrypt from 'bcrypt';
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-client.connect();
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
   const { username, password } = req.body;
@@ -21,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Récupérer l'utilisateur par son username
-    const result = await client.query(
+    const result = await pool.query(
       'SELECT * FROM admins WHERE username = $1',
       [username]
     );
@@ -42,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Erreur serveur' });
     }
 
-    // Le token inclut désormais le rôle (exemple : "admin" ou "superadmin")
+    // Création du token avec le rôle inclus
     const token = jwt.sign(
       { id: admin.id, username: admin.username, role: admin.role },
       process.env.JWT_SECRET,

@@ -4,12 +4,11 @@ import pool from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { date, mealPeriod, starters, mainCourses } = req.body;
-
+    const { date, mealPeriod, starters, mainCourses, desserts } = req.body;
     try {
       const result = await pool.query(
-        'INSERT INTO menus (date, meal_period, starters, main_courses) VALUES ($1, $2, $3, $4) RETURNING *',
-        [date, mealPeriod, starters, mainCourses]
+        'INSERT INTO menus (date, meal_period, starters, main_courses, desserts) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [date, mealPeriod, starters, mainCourses, desserts]
       );
       return res.status(200).json(result.rows[0]);
     } catch (error) {
@@ -17,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: "Erreur lors de l'ajout du menu" });
     }
   } else if (req.method === 'GET') {
-    // Par exemple, pour récupérer un menu (similaire à l'API publique)
+    // Récupération d'un menu
     const { date, mealPeriod } = req.query;
     if (!date || !mealPeriod) {
       return res.status(400).json({ error: 'Date et mealPeriod sont requis' });

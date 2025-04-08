@@ -34,11 +34,14 @@ export default function MealFeedbackPage() {
   // Nouveaux états pour les valeurs personnalisées
   const [customStarter, setCustomStarter] = useState('');
   const [customMainCourse, setCustomMainCourse] = useState('');
+  const [customDessert, setCustomDessert] = useState('');
+  const [chosenDessert, setChosenDessert] = useState<string | null>(null);
+  const [dessertRating, setDessertRating] = useState(0);
 
   const [noAppetizer, setNoAppetizer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[] } | null>(null);
+  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[]; desserts?: string[] } | null>(null);
 
   const reasonOptions = [
     "Portion trop grosse",
@@ -74,9 +77,18 @@ export default function MealFeedbackPage() {
       alert("Veuillez renseigner votre plat personnalisé");
       return;
     }
+    if (chosenDessert === null) {
+      alert('Veuillez choisir votre dessert');
+      return;
+    }
+    if (chosenDessert === "other" && !customDessert.trim()) {
+      alert("Veuillez renseigner votre dessert personnalisé");
+      return;
+    }
 
     const finalChosenStarter = chosenStarter === "other" ? customStarter : chosenStarter;
     const finalChosenMainCourse = chosenMainCourse === "other" ? customMainCourse : chosenMainCourse;
+    const finalChosenDessert = chosenDessert === "other" ? customDessert : chosenDessert;
     
     if (
       appetizerRating === 0 ||
@@ -105,6 +117,8 @@ export default function MealFeedbackPage() {
           comment,
           chosenStarter: finalChosenStarter,
           chosenMainCourse: finalChosenMainCourse,
+          chosenDessert: finalChosenDessert,
+          dessertRating,
           date: new Date().toISOString(),
         }),
       });
@@ -113,6 +127,8 @@ export default function MealFeedbackPage() {
         resetForm();
         setCustomStarter('');
         setCustomMainCourse('');
+        setCustomDessert('');
+        setChosenDessert(null);
       } else {
         setMessage("Erreur lors de l'envoi.");
       }
@@ -152,7 +168,7 @@ export default function MealFeedbackPage() {
             </div>
             <input
               type="text"
-              placeholder="Autre entrée"
+              placeholder="Entrée"
               value={customStarter}
               onChange={(e) => {
                 setCustomStarter(e.target.value);
@@ -290,6 +306,51 @@ export default function MealFeedbackPage() {
           />
         )}
       </FormSection>
+
+      <FormSection
+        title="Quel dessert as-tu choisi ?"
+        icon={<span role="img" aria-label="dessert">🍰</span>}
+        subtitle="Sélectionne ton dessert parmi les options"
+      >
+        <div className={styles.radioGroup}>
+          {menu && menu.desserts && menu.desserts.length > 0 && menu.desserts.map((option, index) => (
+            <RadioOption
+              key={index}
+              label={option}
+              selected={chosenDessert === option}
+              onSelect={() => setChosenDessert(option)}
+            />
+          ))}
+          {/* Option personnalisée pour le dessert */}
+          <div 
+            className={styles.radioOption} 
+            onClick={() => setChosenDessert("other")}
+          >
+            <div className={styles.radioButton}>
+              {chosenDessert === "other" && <div className={styles.radioInner} />}
+            </div>
+            <input
+              type="text"
+              placeholder="Autre dessert"
+              value={customDessert}
+              onChange={(e) => {
+                setCustomDessert(e.target.value);
+                setChosenDessert("other");
+              }}
+              className={styles.radioInput}
+            />
+          </div>
+        </div>
+      </FormSection>
+
+      {chosenDessert !== null && ((chosenDessert === "other" && customDessert.trim() !== "") || chosenDessert !== "other") && (
+        <FormSection
+          title="Note le dessert d'aujourd'hui"
+          icon={<span role="img" aria-label="dessert">🍰</span>}
+        >
+          <StarRating rating={dessertRating} onRatingChange={setDessertRating} />
+        </FormSection>
+      )}
 
       <FormSection
         title="Un commentaire ? (facultatif)"

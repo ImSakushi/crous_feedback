@@ -27,7 +27,14 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ position: 'relative' }}>
+      {/* Lien de retour en haut à gauche */}
+      <p 
+        className={styles.backLink}
+        onClick={() => router.push('/')}
+      >
+        ← Retour
+      </p>
       <h1>Connexion Admin</h1>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
