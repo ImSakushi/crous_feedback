@@ -141,7 +141,7 @@ export default function MealFeedbackPage() {
 
   return (
     <div className={styles.container}>
-      <h1 style={{ textAlign: 'center' }}>Ta contribution sur le repas du jour</h1>
+      <h1>Ta contribution sur le repas du jour</h1>
 
       <FormSection
         title="Quelle entrée as-tu choisie ?"
