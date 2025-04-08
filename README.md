@@ -85,18 +85,16 @@ Chaque section du projet est organisée pour faciliter la maintenance, le dével
 ### Clonage du dépôt
 
 ```bash
-git clone https://github.com/votre-utilisateur/rufeedback.git
+git clone https://github.com/ImSakushi/rufeedback.git
 cd rufeedback
 ```
 
 ### Installation des dépendances
 
-Utilisez npm, yarn, pnpm ou bun selon votre préférence :
+Utilisez npm :
 
 ```bash
 npm install
-# ou
-yarn install
 ```
 
 ### Configuration de l’environnement
@@ -119,8 +117,6 @@ Pour démarrer le serveur en mode développement :
 
 ```bash
 npm run dev
-# ou
-yarn dev
 ```
 
 Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur.  
