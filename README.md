@@ -12,7 +12,6 @@
 - [Architecture et structure du projet](#architecture-et-structure-du-projet)
 - [Installation et configuration](#installation-et-configuration)
 - [Utilisation en développement](#utilisation-en-développement)
-- [Déploiement](#déploiement)
 - [API et endpoints](#api-et-endpoints)
 - [Technologies utilisées](#technologies-utilisées)
 - [Contribution](#contribution)
@@ -121,15 +120,6 @@ npm run dev
 
 Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur.  
 Les modifications apportées aux fichiers dans le répertoire `app` ou `components` seront automatiquement reflétées grâce au hot-reload de Next.js.
-
----
-
-## Déploiement
-
-L’application peut être déployée facilement sur [Vercel](https://vercel.com) ou tout autre fournisseur compatible Node.js.  
-Pour utiliser le fichier **Procfile** et déployer sur une plateforme compatible avec ce type de configuration (par exemple Heroku), assurez-vous que les scripts définis dans le `package.json` correspondent à ce qui est attendu.
-
-Pour plus de détails, consultez la [documentation de déploiement de Next.js](https://nextjs.org/docs/app/building-your-application/deploying).
 
 ---
 
