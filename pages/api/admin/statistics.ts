@@ -7,6 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
+  // Récupération des filtres de date (optionnels)
   const { startDate, endDate } = req.query;
   let filterClause = '';
   let params: any[] = [];
@@ -24,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
     const total = totalResult.rows[0].total;
 
-    // Moyennes des notes, ajout de dessert_rating
+    // Moyennes des notes (y compris dessert_rating)
     const averagesResult = await pool.query(
       `SELECT 
          AVG(appetizer_rating) AS avg_appetizer, 
@@ -90,6 +91,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
+    // Fréquence des sélections de plats (les champs chosen_starter, chosen_main_course et chosen_dessert)
+    const freqStarterResult = await pool.query(
+      `SELECT chosen_starter as dish, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY chosen_starter
+       ORDER BY count DESC`,
+      params
+    );
+    const freqMainCourseResult = await pool.query(
+      `SELECT chosen_main_course as dish, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY chosen_main_course
+       ORDER BY count DESC`,
+      params
+    );
+    const freqDessertResult = await pool.query(
+      `SELECT chosen_dessert as dish, COUNT(*) as count
+       FROM feedback ${filterClause}
+       GROUP BY chosen_dessert
+       ORDER BY count DESC`,
+      params
+    );
+
     res.status(200).json({
       total,
       averages: averagesResult.rows[0],
@@ -101,6 +125,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         taste: distTasteResult.rows,
         portion: distPortionResult.rows,
         dessert: distDessertResult.rows,
+      },
+      dishFrequencies: {
+        starter: freqStarterResult.rows,
+        mainCourse: freqMainCourseResult.rows,
+        dessert: freqDessertResult.rows,
       },
     });
   } catch (error) {

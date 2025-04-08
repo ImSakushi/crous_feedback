@@ -44,6 +44,7 @@ export default function UserManagement() {
         ← Retour
       </p>
       <h1>Gestion des Utilisateurs</h1>
+      
       {loading ? (
         <p>Chargement...</p>
       ) : (
@@ -76,6 +77,13 @@ export default function UserManagement() {
               ))}
             </tbody>
           </table>
+          <button 
+            onClick={() => router.push('/admin/users/create')}
+            className={styles.submitButton}
+            style={{ marginTop: '20px' }}
+          >
+            Créer un nouvel utilisateur
+          </button>
         </>
       )}
     </div>

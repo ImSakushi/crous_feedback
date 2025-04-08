@@ -468,17 +468,17 @@ export default function AdminPanel() {
           <div className={styles.filterSection}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Du :</label>
-              <input 
-                type="date" 
-                value={filterStartDate} 
+              <input
+                type="date"
+                value={filterStartDate}
                 onChange={(e) => setFilterStartDate(e.target.value)}
               />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Au :</label>
-              <input 
-                type="date" 
-                value={filterEndDate} 
+              <input
+                type="date"
+                value={filterEndDate}
                 onChange={(e) => setFilterEndDate(e.target.value)}
               />
             </div>
@@ -491,32 +491,181 @@ export default function AdminPanel() {
           ) : stats ? (
             <div>
               <p>Total des feedbacks : {stats.total}</p>
-              <p>Moyenne entrée : {stats.averages.avg_appetizer ? parseFloat(stats.averages.avg_appetizer).toFixed(1) : '-'}</p>
-              <p>Moyenne plat principal : {stats.averages.avg_main_course ? parseFloat(stats.averages.avg_main_course).toFixed(1) : '-'}</p>
-              <p>Moyenne goût général : {stats.averages.avg_taste ? parseFloat(stats.averages.avg_taste).toFixed(1) : '-'}</p>
-              <p>Moyenne portion : {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'}</p>
+              <p>
+                Moyennes : Entrée {stats.averages.avg_appetizer ? parseFloat(stats.averages.avg_appetizer).toFixed(1) : '-'} | Plat{' '}
+                {stats.averages.avg_main_course ? parseFloat(stats.averages.avg_main_course).toFixed(1) : '-'} | Goût{' '}
+                {stats.averages.avg_taste ? parseFloat(stats.averages.avg_taste).toFixed(1) : '-'} | Portion{' '}
+                {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'} | Dessert{' '}
+                {stats.averages.avg_dessert ? parseFloat(stats.averages.avg_dessert).toFixed(1) : '-'}
+              </p>
 
+              {/* Graphique linéaire : Evolution des feedbacks */}
               <div className={styles.chartContainer}>
-                <Line data={lineChartData} options={lineChartOptions} />
+                <h3>Évolution des feedbacks</h3>
+                <Line
+                  data={{
+                    labels: stats.groupByDate.map((item: any) => item.feedback_date),
+                    datasets: [
+                      {
+                        label: 'Nombre de feedbacks',
+                        data: stats.groupByDate.map((item: any) => parseInt(item.count)),
+                        fill: false,
+                        borderColor: 'rgba(75,192,192,1)',
+                        tension: 0.1,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
+              </div>
+
+              {/* Graphique donut : Statut de l’assiette */}
+              <div className={styles.chartContainer} style={{ maxWidth: '400px', margin: '0 auto' }}>
+                <h3>Statut de l'assiette</h3>
+                <Pie
+                  data={{
+                    labels: stats.finished.map((item: any) =>
+                      item.finished_plate ? 'Tout mangé' : 'Partiellement mangé'
+                    ),
+                    datasets: [
+                      {
+                        data: stats.finished.map((item: any) => parseInt(item.count)),
+                        backgroundColor: ['#F44336', '#4CAF50'],
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
+              </div>
+
+              {/* Graphique groupé en barres : Distribution des notes (pour tous les critères) */}
+              <div className={styles.chartContainer}>
+                <h3>Distribution des notes</h3>
+                <Bar
+                  data={{
+                    labels: [1, 2, 3, 4, 5],
+                    datasets: [
+                      {
+                        label: 'Entrée',
+                        data: stats.distribution.appetizer.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(255,99,132,0.5)',
+                      },
+                      {
+                        label: 'Plat principal',
+                        data: stats.distribution.mainCourse.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                      },
+                      {
+                        label: 'Goût général',
+                        data: stats.distribution.taste.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(255,206,86,0.5)',
+                      },
+                      {
+                        label: 'Portion',
+                        data: stats.distribution.portion.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(75,192,192,0.5)',
+                      },
+                      {
+                        label: 'Dessert',
+                        data: stats.distribution.dessert.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(153,102,255,0.5)',
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
+              </div>
+
+              {/* Fréquence des sélections de plats */}
+              <div className={styles.chartContainer}>
+                <h3>Fréquence des sélections - Entrées</h3>
+                <Bar
+                  data={{
+                    labels: stats.dishFrequencies.starter.map((item: any) => item.dish),
+                    datasets: [
+                      {
+                        label: 'Entrées',
+                        data: stats.dishFrequencies.starter.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(255,159,64,0.5)',
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
               </div>
               <div className={styles.chartContainer}>
-                <Pie data={pieChartData} options={pieChartOptions} />
+                <h3>Fréquence des sélections - Plats principaux</h3>
+                <Bar
+                  data={{
+                    labels: stats.dishFrequencies.mainCourse.map((item: any) => item.dish),
+                    datasets: [
+                      {
+                        label: 'Plats principaux',
+                        data: stats.dishFrequencies.mainCourse.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(75,192,192,0.5)',
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
               </div>
               <div className={styles.chartContainer}>
-                <h3>Distribution des notes - Entrée</h3>
-                <Bar data={barChartDataAppetizer} options={barChartOptions} />
-              </div>
-              <div className={styles.chartContainer}>
-                <h3>Distribution des notes - Plat principal</h3>
-                <Bar data={barChartDataMainCourse} options={barChartOptions} />
-              </div>
-              <div className={styles.chartContainer}>
-                <h3>Distribution des notes - Goût général</h3>
-                <Bar data={barChartDataTaste} options={barChartOptions} />
-              </div>
-              <div className={styles.chartContainer}>
-                <h3>Distribution des notes - Portion</h3>
-                <Bar data={barChartDataPortion} options={barChartOptions} />
+                <h3>Fréquence des sélections - Desserts</h3>
+                <Bar
+                  data={{
+                    labels: stats.dishFrequencies.dessert.map((item: any) => item.dish),
+                    datasets: [
+                      {
+                        label: 'Desserts',
+                        data: stats.dishFrequencies.dessert.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(153,102,255,0.5)',
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
               </div>
             </div>
           ) : (

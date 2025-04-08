@@ -13,6 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       finishedPlate, 
       notEatenReason,
       comment, 
+      chosenStarter, 
+      chosenMainCourse, 
+      chosenDessert, 
       date 
     } = req.body;
     try {
@@ -26,9 +29,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           finished_plate, 
           not_eaten_reason,
           comment, 
+          chosen_starter, 
+          chosen_main_course, 
+          chosen_dessert, 
           date
         )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
          [
           appetizerRating, 
           mainCourseRating, 
@@ -38,6 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           finishedPlate, 
           notEatenReason,
           comment, 
+          chosenStarter, 
+          chosenMainCourse, 
+          chosenDessert, 
           date
         ]
       );
