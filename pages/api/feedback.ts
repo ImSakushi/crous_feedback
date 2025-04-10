@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           finished_plate,
           not_eaten_reason,
           comment,
-          chosen_main_dish,
+          chosen_main_course,
           chosen_accompaniment,
           date
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
