@@ -1,98 +1,81 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import FormSection from '@/components/FormSection';
+import CheckboxGroup from '@/components/CheckboxGroup';
 import StarRating from '@/components/StarRating';
 import RadioOption from '@/components/RadioOption';
 import DropdownSelect from '@/components/DropdownSelect';
 import { useFeedbackStore } from '@/store/feedback-store';
+import { useRouter } from 'next/navigation';
 import styles from '../page.module.css';
 
 export default function MealFeedbackPage() {
+  // États provenant du store (nouveaux attributs pour le plat principal et l'accompagnement)
   const {
-    appetizerRating,
-    mainCourseRating,
-    tasteRating,
+    mainDishRating,
+    setMainDishRating,
+    mainDishTasteRating,
+    setMainDishTasteRating,
+    accompanimentRating,
+    setAccompanimentRating,
+    accompanimentTasteRating,
+    setAccompanimentTasteRating,
     portionRating,
-    finishedPlate,
-    notEatenReason,
-    comment,
-    chosenStarter,
-    chosenMainCourse,
-    setAppetizerRating,
-    setMainCourseRating,
-    setTasteRating,
     setPortionRating,
+    finishedPlate,
     setFinishedPlate,
+    notEatenReason,
     setNotEatenReason,
+    comment,
     setComment,
-    setChosenStarter,
-    setChosenMainCourse,
     resetForm,
   } = useFeedbackStore();
 
-  // Nouveaux états pour les valeurs personnalisées
-  const [customStarter, setCustomStarter] = useState('');
-  const [customMainCourse, setCustomMainCourse] = useState('');
-  const [customDessert, setCustomDessert] = useState('');
-  const [chosenDessert, setChosenDessert] = useState<string | null>(null);
-  const [dessertRating, setDessertRating] = useState(0);
-
+  // New local state for combined dish & accompaniment selection
+  const [selectedDishes, setSelectedDishes] = useState<string[]>([]);
+  const [customDish, setCustomDish] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ starters: string[]; main_courses: string[]; desserts?: string[] } | null>(null);
+  const [menu, setMenu] = useState<{ main_dishes: string[]; accompaniments: string[] } | null>(null);
+  const router = useRouter();
 
-  const reasonOptions = [
-    "Portion trop grosse",
-    "Pas à mon goût",
-    "Pas très faim",
-    "Autre"
-  ];
+  const reasonOptions = ["Portion trop grosse", "Pas à mon goût", "Pas très faim", "Autre"];
 
-  // Récupération automatique du menu du jour
+  // Récupération du menu du jour via l'API (les données comportent les options pour le plat principal et l'accompagnement)
   useEffect(() => {
+    resetForm();
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const hour = now.getHours();
     const mealPeriod = hour < 18 ? 'midi' : 'soir';
-    
     fetch(`/api/menu?date=${dateStr}&mealPeriod=${mealPeriod}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) {
-          setMenu(data);
+          // On suppose ici que l'API retourne un objet avec "main_courses" et "accompaniments"
+          setMenu({
+            main_dishes: data.main_courses,
+            accompaniments: data.accompaniments || []
+          });
         }
       })
       .catch(err => console.error(err));
   }, []);
 
   const handleSubmit = async () => {
-    // Si l'utilisateur saisit son plat/entrée personnalisé, vérifier que le champ est renseigné
-    if (chosenStarter === "other" && !customStarter.trim()) {
-      alert("Veuillez renseigner votre entrée personnalisée");
-      return;
-    }
-    if (chosenMainCourse === "other" && !customMainCourse.trim()) {
-      alert("Veuillez renseigner votre plat personnalisé");
-      return;
-    }
-    if (chosenDessert === null) {
-      alert('Veuillez choisir votre dessert');
-      return;
-    }
-    if (chosenDessert === "other" && !customDessert.trim()) {
-      alert("Veuillez renseigner votre dessert personnalisé");
-      return;
+    const finalDishes = [...selectedDishes];
+    if (selectedDishes.includes("other") && customDish.trim() !== "") {
+      const index = finalDishes.indexOf("other");
+      if (index !== -1) {
+        finalDishes[index] = customDish;
+      }
     }
 
-    const finalChosenStarter = chosenStarter === "other" ? customStarter : chosenStarter;
-    const finalChosenMainCourse = chosenMainCourse === "other" ? customMainCourse : chosenMainCourse;
-    const finalChosenDessert = chosenDessert === "other" ? customDessert : chosenDessert;
-    
     if (
-      appetizerRating === 0 ||
-      mainCourseRating === 0 ||
-      tasteRating === 0 ||
+      mainDishRating === 0 ||
+      mainDishTasteRating === 0 ||
+      accompanimentRating === 0 ||
+      accompanimentTasteRating === 0 ||
       portionRating === 0 ||
       finishedPlate === null ||
       (finishedPlate === false && !notEatenReason)
@@ -100,34 +83,30 @@ export default function MealFeedbackPage() {
       alert('Formulaire incomplet. Merci de remplir tous les champs obligatoires.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          appetizerRating,
-          mainCourseRating,
-          tasteRating,
-          portionRating,
-          finishedPlate,
-          notEatenReason,
-          comment,
-          chosenStarter: finalChosenStarter,
-          chosenMainCourse: finalChosenMainCourse,
-          chosenDessert: finalChosenDessert,
-          dessertRating,
+          main_dish_rating: mainDishRating,
+          main_dish_taste_rating: mainDishTasteRating,
+          accompaniment_rating: accompanimentRating,
+          accompaniment_taste_rating: accompanimentTasteRating,
+          portion_rating: portionRating,
+          finished_plate: finishedPlate,
+          not_eaten_reason: notEatenReason,
+          comment: comment,
+          chosen_main_dish: finalDishes.join(", "),
           date: new Date().toISOString(),
         }),
       });
       if (res.ok) {
-        setMessage('Merci pour votre feedback !');
         resetForm();
-        setCustomStarter('');
-        setCustomMainCourse('');
-        setCustomDessert('');
-        setChosenDessert(null);
+        setSelectedDishes([]);
+        setCustomDish('');
+        router.push('/thankyou');
       } else {
         setMessage("Erreur lors de l'envoi.");
       }
@@ -143,118 +122,93 @@ export default function MealFeedbackPage() {
     <div className={styles.container}>
       <h1>Ta contribution sur le repas du jour</h1>
 
-      <FormSection
-        title="Quelle entrée as-tu choisie ?"
-        icon={<span role="img" aria-label="entrée">🍽️</span>}
-        subtitle="Sélectionne ton entrée parmi les options"
-      >
-        <div className={styles.radioGroup}>
-          {menu && menu.starters && menu.starters.length > 0 && menu.starters.map((option, index) => (
-            <RadioOption
-              key={index}
-              label={option}
-              selected={chosenStarter === option}
-              onSelect={() => setChosenStarter(option)}
-            />
-          ))}
-          {/* Option personnalisée : radio button avec input intégré */}
-          <div 
-            className={styles.radioOption} 
-            onClick={() => setChosenStarter("other")}
+      { /* Combined Selection Section */ }
+      {(() => {
+        const combinedOptions = menu ? [...menu.main_dishes, ...menu.accompaniments] : [];
+        return (
+          <FormSection
+            title="Quel plat et accompagnement as-tu choisi ?"
+            icon={<span role="img" aria-label="repas">🍽️</span>}
+            subtitle="Sélectionnez une ou plusieurs options"
           >
-            <div className={styles.radioButton}>
-              {chosenStarter === "other" && <div className={styles.radioInner} />}
-            </div>
-            <input
-              type="text"
-              placeholder="Entrée"
-              value={customStarter}
-              onChange={(e) => {
-                setCustomStarter(e.target.value);
-                setChosenStarter("other");
-              }}
-              className={styles.radioInput}
+            <CheckboxGroup
+              options={combinedOptions}
+              selected={selectedDishes}
+              onSelect={setSelectedDishes}
+              customValue={customDish}
+              onCustomChange={setCustomDish}
+              label=""
+              className="customInput"
             />
-          </div>
-        </div>
-      </FormSection>
-      
-      {chosenStarter !== null && ((chosenStarter === "other" && customStarter.trim() !== "") || chosenStarter !== "other") && (
-        <FormSection
-          title="Note l'entrée d'aujourd'hui"
-          icon={<span role="img" aria-label="salade">🥗</span>}
-          subtitle="Comment as-tu trouvé l'entrée ?"
-        >
-          <StarRating 
-            rating={appetizerRating} 
-            onRatingChange={setAppetizerRating} 
-          />
-        </FormSection>
-      )}
+          </FormSection>
+        );
+      })()}
 
+      {/* 2. Note le plat principal */}
       <FormSection
-        title={<>Quel plat as-tu choisi ? <span style={{ color: 'red' }}>*</span></>}
+        title="Note le plat principal"
         icon={<span role="img" aria-label="plat">🍽️</span>}
-        subtitle="Sélectionne ton plat parmi les options"
-      >
-        <div className={styles.radioGroup}>
-          {menu && menu.main_courses && menu.main_courses.length > 0 && menu.main_courses.map((option, index) => (
-            <RadioOption
-              key={index}
-              label={option}
-              selected={chosenMainCourse === option}
-              onSelect={() => setChosenMainCourse(option)}
-            />
-          ))}
-          {/* Option personnalisée pour le plat */}
-          <div 
-            className={styles.radioOption} 
-            onClick={() => setChosenMainCourse("other")}
-          >
-            <div className={styles.radioButton}>
-              {chosenMainCourse === "other" && <div className={styles.radioInner} />}
-            </div>
-            <input
-              type="text"
-              placeholder="Autre plat"
-              value={customMainCourse}
-              onChange={(e) => {
-                setCustomMainCourse(e.target.value);
-                setChosenMainCourse("other");
-              }}
-              className={styles.radioInput}
-            />
-          </div>
-        </div>
-      </FormSection>
-
-      <FormSection
-        title={<>Note le plat principal <span style={{ color: 'red' }}>*</span></>}
-        icon={<span role="img" aria-label="soupe">🍜</span>}
         subtitle="Comment as-tu trouvé le plat principal ?"
       >
-        <StarRating rating={mainCourseRating} onRatingChange={setMainCourseRating} />
+        <StarRating rating={mainDishRating} onRatingChange={setMainDishRating} />
       </FormSection>
 
+      {/* 3. Goût général du plat */}
       <FormSection
-        title={<>Et le goût général ? <span style={{ color: 'red' }}>*</span></>}
-        icon={<span role="img" aria-label="utensils">🍴</span>}
-        subtitle="Le repas était-il bien assaisonné et équilibré ?"
+        title="Et le goût général du plat ?"
+        icon={<span role="img" aria-label="goût">🍴</span>}
+        subtitle="Le plat était-il bien assaisonné ?"
       >
-        <StarRating rating={tasteRating} onRatingChange={setTasteRating} />
+        <StarRating rating={mainDishTasteRating} onRatingChange={setMainDishTasteRating} />
+        {mainDishTasteRating === 1 && (
+          <DropdownSelect
+            options={["Trop salé", "Pas assez salé", "Trop épicé", "Fade", "Mauvais goût", "Autre"]}
+            value={notEatenReason || ""}
+            onChange={setNotEatenReason}
+            placeholder="Pourquoi cette note ?"
+          />
+        )}
       </FormSection>
 
+      {/* 4. Note l’accompagnement */}
       <FormSection
-        title={<>La quantité servie <span style={{ color: 'red' }}>*</span></>}
-        icon={<span role="img" aria-label="sandwich">🥪</span>}
-        subtitle="Les portions étaient-elles suffisantes ?"
+        title="Note l’accompagnement"
+        icon={<span role="img" aria-label="accompagnement">🥦</span>}
+        subtitle="Comment as-tu trouvé l’accompagnement ?"
+      >
+        <StarRating rating={accompanimentRating} onRatingChange={setAccompanimentRating} />
+      </FormSection>
+
+      {/* 5. Goût de l’accompagnement */}
+      <FormSection
+        title="Et le goût de l’accompagnement ?"
+        icon={<span role="img" aria-label="goût">🍽️</span>}
+        subtitle="L’accompagnement était-il bien assaisonné ?"
+      >
+        <StarRating rating={accompanimentTasteRating} onRatingChange={setAccompanimentTasteRating} />
+        {accompanimentTasteRating === 1 && (
+          <DropdownSelect
+            options={["Trop salé", "Pas assez salé", "Trop épicé", "Fade", "Mauvais goût", "Autre"]}
+            value={notEatenReason || ""}
+            onChange={setNotEatenReason}
+            placeholder="Pourquoi cette note ?"
+          />
+        )}
+      </FormSection>
+
+      {/* 6. La quantité servie */}
+      <FormSection
+        title="La quantité servie (plat + accompagnement)"
+        icon={<span role="img" aria-label="portion">🍱</span>}
+        subtitle="La portion globale était-elle suffisante ?"
       >
         <StarRating rating={portionRating} onRatingChange={setPortionRating} />
       </FormSection>
 
+      {/* 7. Fini ton assiette */}
       <FormSection
-        title={<>As-tu fini ton assiette ? <span style={{ color: 'red' }}>*</span></>}
-        icon={<span role="img" aria-label="trash">🗑️</span>}
+        title="As-tu fini ton assiette ?"
+        icon={<span role="img" aria-label="assiette">🗑️</span>}
       >
         <div className={styles.radioGroup}>
           <RadioOption
@@ -268,83 +222,35 @@ export default function MealFeedbackPage() {
             onSelect={() => setFinishedPlate(false)}
           />
         </div>
-        
         {finishedPlate === false && (
           <DropdownSelect
             options={reasonOptions}
-            value={notEatenReason}
+            value={notEatenReason || ""}
             onChange={setNotEatenReason}
             placeholder="Si non, pourquoi ?"
           />
         )}
       </FormSection>
 
-      <FormSection
-        title="Quel dessert as-tu choisi ?"
-        icon={<span role="img" aria-label="dessert">🍰</span>}
-        subtitle="Sélectionne ton dessert parmi les options"
-      >
-        <div className={styles.radioGroup}>
-          {menu && menu.desserts && menu.desserts.length > 0 && menu.desserts.map((option, index) => (
-            <RadioOption
-              key={index}
-              label={option}
-              selected={chosenDessert === option}
-              onSelect={() => setChosenDessert(option)}
-            />
-          ))}
-          {/* Option personnalisée pour le dessert */}
-          <div 
-            className={styles.radioOption} 
-            onClick={() => setChosenDessert("other")}
-          >
-            <div className={styles.radioButton}>
-              {chosenDessert === "other" && <div className={styles.radioInner} />}
-            </div>
-            <input
-              type="text"
-              placeholder="Autre dessert"
-              value={customDessert}
-              onChange={(e) => {
-                setCustomDessert(e.target.value);
-                setChosenDessert("other");
-              }}
-              className={styles.radioInput}
-            />
-          </div>
-        </div>
-      </FormSection>
-
-      {chosenDessert !== null && ((chosenDessert === "other" && customDessert.trim() !== "") || chosenDessert !== "other") && (
-        <FormSection
-          title="Note le dessert d'aujourd'hui"
-          icon={<span role="img" aria-label="dessert">🍰</span>}
-        >
-          <StarRating rating={dessertRating} onRatingChange={setDessertRating} />
-        </FormSection>
-      )}
-
+      {/* 8. Commentaire facultatif */}
       <FormSection
         title="Un commentaire ? (facultatif)"
-        icon={<span role="img" aria-label="message">💬</span>}
+        icon={<span role="img" aria-label="commentaire">💬</span>}
       >
-        <div className={styles.textareaContainer}>
-          <textarea
-            className={styles.textarea}
-            placeholder="Partagez votre avis..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={4}
-            maxLength={150}
-          />
-        </div>
+        <textarea
+          placeholder="Partagez votre avis..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={4}
+          className={styles.textarea}
+        />
       </FormSection>
 
+      {/* 9. Bouton d’envoi */}
       <button onClick={handleSubmit} className={styles.submitButton} disabled={loading}>
         Envoyer
       </button>
-
-      {message && <p className={styles.message}>{message}</p>}
+      {message && <p>{message}</p>}
     </div>
   );
 }

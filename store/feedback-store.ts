@@ -1,55 +1,59 @@
+// store/feedback-store.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface FeedbackState {
-  appetizerRating: number;
-  mainCourseRating: number;
-  tasteRating: number;
+  mainDishRating: number;
+  mainDishTasteRating: number;
+  accompanimentRating: number;
+  accompanimentTasteRating: number;
   portionRating: number;
   finishedPlate: boolean | null;
   notEatenReason: string | null;
   comment: string;
-  chosenStarter: string | null;
-  chosenMainCourse: string | null;
-  
-  setAppetizerRating: (rating: number) => void;
-  setMainCourseRating: (rating: number) => void;
-  setTasteRating: (rating: number) => void;
+  chosenMainDish: string | null;
+  chosenAccompaniment: string | null;
+  setMainDishRating: (rating: number) => void;
+  setMainDishTasteRating: (rating: number) => void;
+  setAccompanimentRating: (rating: number) => void;
+  setAccompanimentTasteRating: (rating: number) => void;
   setPortionRating: (rating: number) => void;
   setFinishedPlate: (finished: boolean) => void;
   setNotEatenReason: (reason: string | null) => void;
   setComment: (comment: string) => void;
-  setChosenStarter: (value: string) => void;
-  setChosenMainCourse: (value: string) => void;
+  setChosenMainDish: (value: string) => void;
+  setChosenAccompaniment: (value: string) => void;
   resetForm: () => void;
 }
 
 const initialState = {
-  appetizerRating: 0,
-  mainCourseRating: 0,
-  tasteRating: 0,
+  mainDishRating: 0,
+  mainDishTasteRating: 0,
+  accompanimentRating: 0,
+  accompanimentTasteRating: 0,
   portionRating: 0,
   finishedPlate: null,
   notEatenReason: null,
   comment: '',
-  chosenStarter: null,
-  chosenMainCourse: null,
+  chosenMainDish: null,
+  chosenAccompaniment: null,
 };
 
 export const useFeedbackStore = create<FeedbackState>()(
   persist(
     (set) => ({
       ...initialState,
-      setAppetizerRating: (rating) => set({ appetizerRating: rating }),
-      setMainCourseRating: (rating) => set({ mainCourseRating: rating }),
-      setTasteRating: (rating) => set({ tasteRating: rating }),
+      setMainDishRating: (rating) => set({ mainDishRating: rating }),
+      setMainDishTasteRating: (rating) => set({ mainDishTasteRating: rating }),
+      setAccompanimentRating: (rating) => set({ accompanimentRating: rating }),
+      setAccompanimentTasteRating: (rating) => set({ accompanimentTasteRating: rating }),
       setPortionRating: (rating) => set({ portionRating: rating }),
       setFinishedPlate: (finished) =>
         set({ finishedPlate: finished, ...(finished ? { notEatenReason: null } : {}) }),
       setNotEatenReason: (reason) => set({ notEatenReason: reason }),
       setComment: (comment) => set({ comment }),
-      setChosenStarter: (value) => set({ chosenStarter: value }),
-      setChosenMainCourse: (value) => set({ chosenMainCourse: value }),
+      setChosenMainDish: (value) => set({ chosenMainDish: value }),
+      setChosenAccompaniment: (value) => set({ chosenAccompaniment: value }),
       resetForm: () => set(initialState),
     }),
     {

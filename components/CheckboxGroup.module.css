@@ -1,0 +1,56 @@
+/* CheckboxGroup.module.css */
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .option {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  
+  /* La case à cocher reprend une taille et un accent similaires à ceux utilisés pour les boutons radio */
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    /* Utilise la couleur d'accent habituelle */
+    accent-color: #007BFF;
+  }
+  
+  /* Le label de l'option */
+  .label {
+    font-size: 16px;
+    font-family: var(--font-marianne);
+  }
+  
+  .radioInput {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+    font-size: 16px;
+    outline: none;
+    font-family: var(--font-marianne);
+    background: transparent;
+    margin-left: 8px;
+  }
+  
+  .radioInput::placeholder {
+    color: #999;
+  }
+
+  .radioButton {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+  }

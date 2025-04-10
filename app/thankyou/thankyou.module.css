@@ -1,0 +1,21 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Remplit toute la hauteur de la fenêtre */
+    text-align: center;
+    font-family: var(--font-marianne), sans-serif; /* Utilisation de la police Marianne */
+    padding: 0 20px;
+  }
+  
+  .title {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+  
+  .subtitle {
+    font-size: 24px;
+    color: #007BFF; /* Couleur du call-to-action */
+    cursor: pointer;
+  }

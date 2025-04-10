@@ -5,50 +5,34 @@ import pool from '@/lib/db';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { 
-      appetizerRating, 
-      mainCourseRating, 
-      tasteRating, 
-      portionRating, 
-      dessertRating,
-      finishedPlate, 
-      notEatenReason,
-      comment, 
-      chosenStarter, 
-      chosenMainCourse, 
-      chosenDessert, 
-      date 
+      main_dish_rating,
+      main_dish_taste_rating,
+      accompaniment_rating,
+      accompaniment_taste_rating,
+      portion_rating,
+      finished_plate,
+      not_eaten_reason,
+      comment,
+      chosen_main_dish,
+      chosen_accompaniment,
+      date
     } = req.body;
     try {
       const result = await pool.query(
         `INSERT INTO feedback (
-          appetizer_rating, 
-          main_course_rating, 
-          taste_rating, 
-          portion_rating, 
-          dessert_rating,
-          finished_plate, 
+          main_dish_rating,
+          main_dish_taste_rating,
+          accompaniment_rating,
+          accompaniment_taste_rating,
+          portion_rating,
+          finished_plate,
           not_eaten_reason,
-          comment, 
-          chosen_starter, 
-          chosen_main_course, 
-          chosen_dessert, 
+          comment,
+          chosen_main_dish,
+          chosen_accompaniment,
           date
-        )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-         [
-          appetizerRating, 
-          mainCourseRating, 
-          tasteRating, 
-          portionRating, 
-          dessertRating,
-          finishedPlate, 
-          notEatenReason,
-          comment, 
-          chosenStarter, 
-          chosenMainCourse, 
-          chosenDessert, 
-          date
-        ]
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        [main_dish_rating, main_dish_taste_rating, accompaniment_rating, accompaniment_taste_rating, portion_rating, finished_plate, not_eaten_reason, comment, chosen_main_dish, chosen_accompaniment, date]
       );
       res.status(200).json(result.rows[0]);
     } catch (error) {
