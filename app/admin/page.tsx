@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import FormSection from '@/components/FormSection';
 import styles from './admin.module.css';
-import { Line, Pie, Bar } from 'react-chartjs-2';
+import { Line, Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { useRouter } from 'next/navigation';
 
@@ -11,10 +11,9 @@ interface Menu {
   id?: number;
   date: string;
   meal_period: string;
-  starters: string[];
   main_courses: string[];
-  desserts?: string[];
-  extra?: string; // Nouvelle propriété pour les informations "Extra"
+  accompaniments?: string[];
+  extra?: string;
 }
 
 export default function AdminPanel() {
@@ -23,17 +22,16 @@ export default function AdminPanel() {
   // Gestion des onglets
   const [activeTab, setActiveTab] = useState<'menus' | 'statistiques'>('menus');
 
-  // États pour le menu
+  // États pour la gestion du menu (nouveau schéma : plus d'entrée ni dessert, uniquement plat et accompagnement)
   const [menuDate, setMenuDate] = useState('');
   const [menuMealPeriod, setMenuMealPeriod] = useState('midi');
   const [menu, setMenu] = useState<Menu | null>(null);
-  const [starters, setStarters] = useState<string[]>(['']);
   const [mainCourses, setMainCourses] = useState<string[]>(['']);
-  const [desserts, setDesserts] = useState<string[]>(['']); // Nouvel état pour les desserts
-  const [extra, setExtra] = useState(''); // Nouvel état pour la partie "Extra"
+  const [accompaniments, setAccompaniments] = useState<string[]>(['']);
+  const [extra, setExtra] = useState('');
   const [message, setMessage] = useState('');
 
-  // États des statistiques (inchangés)
+  // États des statistiques
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
   const [stats, setStats] = useState<any>(null);
@@ -56,14 +54,13 @@ export default function AdminPanel() {
     fetchCurrentAdmin();
   }, []);
 
-  // Récupération du menu (mise à jour pour inclure les desserts et la partie extra)
+  // Récupération du menu (mise à jour : le menu retourne main_courses et accompaniments)
   useEffect(() => {
     async function fetchMenuData() {
       if (!menuDate) {
         setMenu(null);
-        setStarters(['']);
         setMainCourses(['']);
-        setDesserts(['']);
+        setAccompaniments(['']);
         setExtra('');
         return;
       }
@@ -72,15 +69,13 @@ export default function AdminPanel() {
         if (res.ok) {
           const data = await res.json();
           setMenu(data);
-          setStarters(data.starters);
           setMainCourses(data.main_courses);
-          setDesserts(data.desserts || ['']);
+          setAccompaniments(data.accompaniments || ['']);
           setExtra(data.extra || '');
         } else {
           setMenu(null);
-          setStarters(['']);
           setMainCourses(['']);
-          setDesserts(['']);
+          setAccompaniments(['']);
           setExtra('');
         }
       } catch (error) {
@@ -91,16 +86,7 @@ export default function AdminPanel() {
     fetchMenuData();
   }, [menuDate, menuMealPeriod]);
 
-  // Gestion des entrées et des plats
-  const handleStarterInputChange = (index: number, value: string) => {
-    const newStarters = [...starters];
-    newStarters[index] = value;
-    setStarters(newStarters);
-    if (index === newStarters.length - 1 && value.trim() !== '') {
-      setStarters([...newStarters, '']);
-    }
-  };
-
+  // Gestion du champ Plat principal
   const handleMainCourseInputChange = (index: number, value: string) => {
     const newMainCourses = [...mainCourses];
     newMainCourses[index] = value;
@@ -110,22 +96,21 @@ export default function AdminPanel() {
     }
   };
 
-  // Gestion des desserts
-  const handleDessertInputChange = (index: number, value: string) => {
-    const newDesserts = [...desserts];
-    newDesserts[index] = value;
-    setDesserts(newDesserts);
-    if (index === newDesserts.length - 1 && value.trim() !== '') {
-      setDesserts([...newDesserts, '']);
+  // Gestion du champ Accompagnement
+  const handleAccompanimentInputChange = (index: number, value: string) => {
+    const newAccompaniments = [...accompaniments];
+    newAccompaniments[index] = value;
+    setAccompaniments(newAccompaniments);
+    if (index === newAccompaniments.length - 1 && value.trim() !== '') {
+      setAccompaniments([...newAccompaniments, '']);
     }
   };
 
-  // Ajout d'un menu (mise à jour pour inclure desserts et extra)
+  // Ajout d'un menu (mise à jour pour inclure uniquement main_courses et accompaniments)
   const handleAddMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const filteredStarters = starters.filter(s => s.trim() !== '');
     const filteredMainCourses = mainCourses.filter(s => s.trim() !== '');
-    const filteredDesserts = desserts.filter(d => d.trim() !== '');
+    const filteredAccompaniments = accompaniments.filter(s => s.trim() !== '');
 
     try {
       const res = await fetch('/api/admin/menu', {
@@ -134,10 +119,9 @@ export default function AdminPanel() {
         body: JSON.stringify({
           date: menuDate,
           mealPeriod: menuMealPeriod,
-          starters: filteredStarters,
           mainCourses: filteredMainCourses,
-          desserts: filteredDesserts, // Envoi des desserts
-          extra, // Envoi de la partie "Extra"
+          accompaniments: filteredAccompaniments,
+          extra,
         }),
       });
       if (res.ok) {
@@ -153,7 +137,7 @@ export default function AdminPanel() {
     }
   };
 
-  // Modification d'un menu existant (mise à jour pour inclure desserts et extra)
+  // Modification d'un menu existant
   const handleSaveMenu = async () => {
     if (!menu || !menu.id) return;
     try {
@@ -162,10 +146,9 @@ export default function AdminPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: menu.id,
-          starters,
           mainCourses,
-          desserts, // Envoi des desserts
-          extra,     // Envoi de la partie "Extra"
+          accompaniments,
+          extra,
         }),
       });
       if (res.ok) {
@@ -202,102 +185,46 @@ export default function AdminPanel() {
     }
   };
 
-  // Données pour le graphique linéaire (statistiques)
-  const lineChartData = {
-    labels: stats ? stats.groupByDate.map((item: any) => item.feedback_date) : [],
-    datasets: [
-      {
-        label: 'Nombre de feedbacks',
-        data: stats ? stats.groupByDate.map((item: any) => item.count) : [],
-        fill: false,
-        borderColor: 'rgba(75,192,192,1)',
-        tension: 0.1,
-      },
-    ],
-  };
-
+  // Options communes pour les graphiques
   const lineChartOptions = {
     responsive: true,
     plugins: {
-      legend: {
-        position: 'top' as const,
-      },
+      legend: { position: 'top' as const },
     },
   };
 
-  // Données pour le graphique en camembert (statistiques)
-  const pieChartData = {
-    labels: stats ? stats.finished.map((item: any) => item.finished_plate ? 'Tout mangé' : 'Partiellement mangé') : [],
-    datasets: [
-      {
-        data: stats ? stats.finished.map((item: any) => item.count) : [],
-        backgroundColor: ['#4CAF50', '#F44336'],
-      },
-    ],
-  };
-
-  const pieChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-    },
-  };
-
-  // Options communes pour les graphiques en barres (statistiques)
   const barChartOptions = {
     responsive: true,
     plugins: {
       legend: {
+        display: true,
         position: 'top' as const,
+        labels: {
+          font: { size: 14 },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            return `${context.dataset.label} : ${context.parsed.y}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Notes', font: { size: 14 } },
+      },
+      y: {
+        title: { display: true, text: 'Nombre', font: { size: 14 } },
+        beginAtZero: true,
       },
     },
   };
 
-  // Données pour la distribution des notes (statistiques)
-  const barChartDataAppetizer = {
-    labels: stats ? stats.distribution.appetizer.map((item: any) => item.rating) : [],
-    datasets: [
-      {
-        label: 'Entrée',
-        data: stats ? stats.distribution.appetizer.map((item: any) => item.count) : [],
-        backgroundColor: 'rgba(255,99,132,0.5)',
-      },
-    ],
-  };
-
-  const barChartDataMainCourse = {
-    labels: stats ? stats.distribution.mainCourse.map((item: any) => item.rating) : [],
-    datasets: [
-      {
-        label: 'Plat principal',
-        data: stats ? stats.distribution.mainCourse.map((item: any) => item.count) : [],
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-      },
-    ],
-  };
-
-  const barChartDataTaste = {
-    labels: stats ? stats.distribution.taste.map((item: any) => item.rating) : [],
-    datasets: [
-      {
-        label: 'Goût général',
-        data: stats ? stats.distribution.taste.map((item: any) => item.count) : [],
-        backgroundColor: 'rgba(255, 206, 86, 0.5)',
-      },
-    ],
-  };
-
-  const barChartDataPortion = {
-    labels: stats ? stats.distribution.portion.map((item: any) => item.rating) : [],
-    datasets: [
-      {
-        label: 'Portion',
-        data: stats ? stats.distribution.portion.map((item: any) => item.count) : [],
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-      },
-    ],
+  const pieChartOptions = {
+    responsive: true,
+    plugins: { legend: { position: 'top' as const } },
   };
 
   // Fonction de déconnexion
@@ -316,14 +243,14 @@ export default function AdminPanel() {
 
   return (
     <div className={styles.container} style={{ position: 'relative' }}>
-      {/* Bouton de déconnexion sticky en haut à droite */}
+      {/* Bouton de déconnexion sticky */}
       <button onClick={handleLogout} className={styles.logoutButton}>
         Déconnexion
       </button>
 
       <h1>Panel Admin - Gestion des menus et Statistiques</h1>
 
-      {/* Onglets pour basculer entre "Menus" et "Statistiques" */}
+      {/* Onglets pour basculer */}
       <div className={styles.tabs}>
         <button
           className={activeTab === 'menus' ? styles.activeTab : styles.tab}
@@ -372,21 +299,9 @@ export default function AdminPanel() {
           </div>
 
           {menu ? (
-            // Mode modification d'un menu existant
+            // Mode modification du menu existant
             <div>
               <h3>Modifier le menu du {menuMealPeriod} du {new Date(menu.date).toLocaleDateString('fr-FR')}</h3>
-              <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
-                {starters.map((starter, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    value={starter}
-                    onChange={(e) => handleStarterInputChange(index, e.target.value)}
-                    placeholder={`Entrée ${index + 1}`}
-                    className={styles.dishInput}
-                  />
-                ))}
-              </FormSection>
               <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
                 {mainCourses.map((course, index) => (
                   <input
@@ -400,19 +315,18 @@ export default function AdminPanel() {
                   />
                 ))}
               </FormSection>
-              <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
-                {desserts.map((dessert, index) => (
+              <FormSection title="Accompagnements" icon={<span role="img" aria-label="accompagnement">🥦</span>}>
+                {accompaniments.map((accompaniment, index) => (
                   <input
                     key={index}
                     type="text"
-                    value={dessert}
-                    onChange={(e) => handleDessertInputChange(index, e.target.value)}
-                    placeholder={`Dessert ${index + 1}`}
+                    value={accompaniments[index]}
+                    onChange={(e) => handleAccompanimentInputChange(index, e.target.value)}
+                    placeholder={`Accompagnement ${index + 1}`}
                     className={styles.dishInput}
                   />
                 ))}
               </FormSection>
-              {/* Nouvelle section Extra avec le même style que dishInput */}
               <FormSection title="Extra" icon={<span role="img" aria-label="extra">✨</span>}>
                 <textarea
                   value={extra}
@@ -431,18 +345,6 @@ export default function AdminPanel() {
             // Mode ajout d'un nouveau menu
             <form onSubmit={handleAddMenuSubmit}>
               <h3>Ajouter un nouveau menu</h3>
-              <FormSection title="Entrées" icon={<span role="img" aria-label="entrée">🍽️</span>}>
-                {starters.map((starter, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    value={starter}
-                    onChange={(e) => handleStarterInputChange(index, e.target.value)}
-                    placeholder={`Entrée ${index + 1}`}
-                    className={styles.dishInput}
-                  />
-                ))}
-              </FormSection>
               <FormSection title="Plats" icon={<span role="img" aria-label="plat">🍽️</span>}>
                 {mainCourses.map((course, index) => (
                   <input
@@ -452,23 +354,21 @@ export default function AdminPanel() {
                     onChange={(e) => handleMainCourseInputChange(index, e.target.value)}
                     placeholder={`Plat ${index + 1}`}
                     className={styles.dishInput}
-                    required={index === 0}
                   />
                 ))}
               </FormSection>
-              <FormSection title="Desserts" icon={<span role="img" aria-label="dessert">🍰</span>}>
-                {desserts.map((dessert, index) => (
+              <FormSection title="Accompagnements" icon={<span role="img" aria-label="accompagnement">🥦</span>}>
+                {accompaniments.map((accompaniment, index) => (
                   <input
                     key={index}
                     type="text"
-                    value={dessert}
-                    onChange={(e) => handleDessertInputChange(index, e.target.value)}
-                    placeholder={`Dessert ${index + 1}`}
+                    value={accompaniments[index]}
+                    onChange={(e) => handleAccompanimentInputChange(index, e.target.value)}
+                    placeholder={`Accompagnement ${index + 1}`}
                     className={styles.dishInput}
                   />
                 ))}
               </FormSection>
-              {/* Section Extra pour ajout */}
               <FormSection title="Extra" icon={<span role="img" aria-label="extra">✨</span>}>
                 <input
                   value={extra}
@@ -516,15 +416,10 @@ export default function AdminPanel() {
             <div>
               <p>Total des feedbacks : {stats.total}</p>
               <p>
-                Moyennes : Entrée {stats.averages.avg_appetizer ? parseFloat(stats.averages.avg_appetizer).toFixed(1) : '-'} | Plat{' '}
-                {stats.averages.avg_main_course ? parseFloat(stats.averages.avg_main_course).toFixed(1) : '-'} | Goût{' '}
-                {stats.averages.avg_taste ? parseFloat(stats.averages.avg_taste).toFixed(1) : '-'} | Portion{' '}
-                {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'} | Dessert{' '}
-                {stats.averages.avg_dessert ? parseFloat(stats.averages.avg_dessert).toFixed(1) : '-'} | Extra{' '}
-                {stats.averages.avg_extra ? parseFloat(stats.averages.avg_extra).toFixed(1) : '-'}
+                Moyennes : Plat principal {stats.averages.avg_main_dish ? parseFloat(stats.averages.avg_main_dish).toFixed(1) : '-'} | Goût du plat {stats.averages.avg_main_taste ? parseFloat(stats.averages.avg_main_taste).toFixed(1) : '-'} | Accompagnement {stats.averages.avg_accompaniment ? parseFloat(stats.averages.avg_accompaniment).toFixed(1) : '-'} | Goût de l'accompagnement {stats.averages.avg_accompaniment_taste ? parseFloat(stats.averages.avg_accompaniment_taste).toFixed(1) : '-'} | Portion {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'}
               </p>
 
-              {/* Graphique linéaire : Evolution des feedbacks */}
+              {/* Graphique linéaire : Évolution des feedbacks */}
               <div className={styles.chartContainer}>
                 <h3>Évolution des feedbacks</h3>
                 <Line
@@ -544,7 +439,7 @@ export default function AdminPanel() {
                 />
               </div>
 
-              {/* Graphique donut : Statut de l’assiette */}
+              {/* Graphique donut : Statut de l'assiette */}
               <div className={styles.chartContainer} style={{ maxWidth: '400px', margin: '0 auto' }}>
                 <h3>Statut de l'assiette</h3>
                 <Pie
@@ -555,7 +450,7 @@ export default function AdminPanel() {
                     datasets: [
                       {
                         data: stats.finished.map((item: any) => parseInt(item.count)),
-                        backgroundColor: ['#F44336', '#4CAF50'],
+                        backgroundColor: ['#4CAF50', '#F44336'],
                       },
                     ],
                   }}
@@ -563,7 +458,7 @@ export default function AdminPanel() {
                 />
               </div>
 
-              {/* Graphique groupé en barres : Distribution des notes */}
+              {/* Graphique en barres : Distribution des notes */}
               <div className={styles.chartContainer}>
                 <h3>Distribution des notes</h3>
                 <Bar
@@ -571,29 +466,29 @@ export default function AdminPanel() {
                     labels: [1, 2, 3, 4, 5],
                     datasets: [
                       {
-                        label: 'Entrée',
-                        data: stats.distribution.appetizer.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(255,99,132,0.5)',
-                      },
-                      {
                         label: 'Plat principal',
                         data: stats.distribution.mainCourse.map((item: any) => parseInt(item.count)),
                         backgroundColor: 'rgba(54, 162, 235, 0.5)',
                       },
                       {
-                        label: 'Goût général',
+                        label: 'Goût du plat',
                         data: stats.distribution.taste.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(255,206,86,0.5)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                      },
+                      {
+                        label: 'Accompagnement',
+                        data: stats.distribution.accompaniment.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(75,192,192,0.5)',
+                      },
+                      {
+                        label: 'Goût de l’accompagnement',
+                        data: stats.distribution.accompaniment_taste.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
                       },
                       {
                         label: 'Portion',
                         data: stats.distribution.portion.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(75,192,192,0.5)',
-                      },
-                      {
-                        label: 'Dessert',
-                        data: stats.distribution.dessert.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(153,102,255,0.5)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.5)',
                       },
                     ],
                   }}
@@ -601,49 +496,35 @@ export default function AdminPanel() {
                 />
               </div>
 
-              {/* Fréquence des sélections de plats */}
+              {/* Fréquence des sélections pour le plat principal */}
               <div className={styles.chartContainer}>
-                <h3>Fréquence des sélections - Entrées</h3>
-                <Bar
-                  data={{
-                    labels: stats.dishFrequencies.starter.map((item: any) => item.dish),
-                    datasets: [
-                      {
-                        label: 'Entrées',
-                        data: stats.dishFrequencies.starter.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(255,159,64,0.5)',
-                      },
-                    ],
-                  }}
-                  options={barChartOptions}
-                />
-              </div>
-              <div className={styles.chartContainer}>
-                <h3>Fréquence des sélections - Plats principaux</h3>
+                <h3>Fréquence des sélections - Plat principal</h3>
                 <Bar
                   data={{
                     labels: stats.dishFrequencies.mainCourse.map((item: any) => item.dish),
                     datasets: [
                       {
-                        label: 'Plats principaux',
+                        label: 'Plat principal',
                         data: stats.dishFrequencies.mainCourse.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(75,192,192,0.5)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
                       },
                     ],
                   }}
                   options={barChartOptions}
                 />
               </div>
+
+              {/* Fréquence des sélections pour l’accompagnement */}
               <div className={styles.chartContainer}>
-                <h3>Fréquence des sélections - Desserts</h3>
+                <h3>Fréquence des sélections - Accompagnement</h3>
                 <Bar
                   data={{
-                    labels: stats.dishFrequencies.dessert.map((item: any) => item.dish),
+                    labels: stats.dishFrequencies.accompaniment.map((item: any) => item.dish),
                     datasets: [
                       {
-                        label: 'Desserts',
-                        data: stats.dishFrequencies.dessert.map((item: any) => parseInt(item.count)),
-                        backgroundColor: 'rgba(153,102,255,0.5)',
+                        label: 'Accompagnement',
+                        data: stats.dishFrequencies.accompaniment.map((item: any) => parseInt(item.count)),
+                        backgroundColor: 'rgba(75,192,192,0.5)',
                       },
                     ],
                   }}

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
-import { useRouter } from 'next/navigation';
 
 interface Menu {
   starters: string[];
@@ -17,17 +16,17 @@ export default function HomePage() {
   const [mealPeriod, setMealPeriod] = useState<'midi' | 'soir'>('midi');
 
   useEffect(() => {
-    // Récupération de la date courante au format YYYY-MM-DD
+    // Get current date in YYYY-MM-DD format
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     setCurrentDate(dateStr);
 
-    // Détermination de la période (midi / soir)
+    // Determine meal period
     const hour = now.getHours();
     const period = hour < 18 ? 'midi' : 'soir';
     setMealPeriod(period);
 
-    // Formatage en français, ex: "mercredi 12 avril 2023"
+    // Format date in French format, e.g. "mercredi 12 avril 2023"
     const formatted = now.toLocaleDateString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
@@ -36,7 +35,7 @@ export default function HomePage() {
     });
     setFormattedDate(formatted);
 
-    // Récupération du menu via l'API
+    // Fetch menu from API
     fetch(`/api/menu?date=${dateStr}&mealPeriod=${period}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -48,91 +47,65 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
+    <div className={styles.pageContainer}>
       <header className={styles.header}>
-        <h1 className={styles.discuTitle}>Discu-Table</h1>
+        <img src="/icons/crous_logo.svg" alt="Logo" className={styles.logo} />
         <nav className={styles.nav}>
           <Link href="/" className={styles.navLink}>Accueil</Link>
           <Link href="/feedback" className={styles.navLink}>Feedback</Link>
         </nav>
       </header>
-
-      {/* Contenu principal */}
-      <main className={styles.main}>
-        {/* Section "Qui sommes-nous ?" */}
-        <section className={styles.aboutSection}>
-          <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
-          <p className={styles.sectionText}>
-            Discu-Table est une initiative du Crous permettant aux étudiants de découvrir et d’évaluer les repas, tout en fournissant des informations sur l’origine et la préparation de chaque plat.
-          </p>
-        </section>
-
-        {/* Section "Repas du jour" */}
+      <main className={styles.mainContent}>
         <section className={styles.menuSection}>
-          <h2 className={styles.sectionTitle}>Repas du jour</h2>
-          <div className={styles.menuInfo}>
-            <p className={styles.sectionText}>
-              Aujourd'hui, nous sommes le <strong>{formattedDate}</strong> et il s’agit du service <strong>{mealPeriod}</strong>.
-            </p>
-
+          <h2 className={styles.sectionTitle}>MENU DU JOUR</h2>
+          {/* Plats ET Accompagnements */}
+          <div className={styles.menuItem}>
+            <h3>Plats ET Accompagnements :</h3>
             {menu ? (
-              <div className={styles.menuGrid}>
-                {/* Entrées */}
-                <div className={styles.menuBox}>
-                  <h3 className={styles.menuSubTitle}>Entrées</h3>
-                  <ul className={styles.dishList}>
-                    {menu.starters.map((starter, index) => (
-                      <li key={index}>{starter}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Plat principal */}
-                <div className={styles.menuBox}>
-                  <h3 className={styles.menuSubTitle}>Plat principal</h3>
-                  <ul className={styles.dishList}>
-                    {menu.main_courses.map((dish, index) => (
-                      <li key={index}>{dish}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              <ul>
+                {menu.starters.concat(menu.main_courses).map((dish, index) => (
+                  <li key={index}>{dish}</li>
+                ))}
+              </ul>
             ) : (
-              <p className={styles.sectionText}>Aucun menu disponible pour cette date.</p>
+              <p>Liste des plats et accompagnements ici.</p>
             )}
+          </div>
+          {/* Desserts */}
+          <div className={styles.menuItem}>
+            <h3>Desserts :</h3>
+            <p>Liste des desserts ici.</p>
+          </div>
+          {/* Extras */}
+          <div className={styles.menuItem}>
+            <h3>Extras :</h3>
+            <p>Liste des extras ici.</p>
+          </div>
 
-            <div className={styles.buttonContainer}>
               <Link href="/feedback">
                 <button className={styles.noteButton}>Notez le repas</button>
               </Link>
-            </div>
-          </div>
+            
         </section>
 
-        {/* Section "Infos pratiques" */}
         <section className={styles.infoSection}>
-          <h2 className={styles.sectionTitle}>Infos pratiques</h2>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <img src="/images/phone-icon.png" alt="Contact" className={styles.infoIcon} />
-              <p>Contact : (01 23 45 67 89)</p>
-            </div>
-            <div className={styles.infoItem}>
-              <img src="/images/payment-icon.png" alt="Paiement" className={styles.infoIcon} />
-              <p>Paiement par carte bancaire et Izly</p>
-            </div>
-            <div className={styles.infoItem}>
-              <img src="/images/time-icon.png" alt="Horaires" className={styles.infoIcon} />
-              <p>Horaires : 11h30 - 14h / 18h - 20h</p>
-            </div>
-          </div>
+          <h2 className={styles.sectionTitle}>COMMENT LES REPAS SONT DECIDES</h2>
+          <p className={styles.sectionText}>
+            Le conseil de restauration crée les menus toutes les 6 semaines. Il est composé d'étudiants, d'une diététicienne et d'un représentant budgétaire.
+          </p>
+        </section>
+
+        <section className={styles.aboutSection}>
+          <h2 className={styles.sectionTitle}>QUI SOMMES NOUS</h2>
+          <p className={styles.sectionText}>
+            Nous sommes le CROUS Crew, un groupe d'étudiants MMI de l'IUT Bordeaux Montaigne, et pour nous, notre alimentation est une priorité!
+          </p>
         </section>
       </main>
-
-      {/* Footer */}
       <footer className={styles.footer}>
-        <p className={styles.footerText}>© {new Date().getFullYear()} Discu-Table - Tous droits réservés</p>
+        <p className={styles.footerText}>
+          © {new Date().getFullYear()} Discu-Table - Tous droits réservés
+        </p>
       </footer>
     </div>
   );

@@ -1,4 +1,5 @@
 // pages/api/admin/statistics.ts
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/lib/db';
 
@@ -7,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  // Récupération des filtres de date (optionnels)
+  // Récupération des filtres de date éventuels
   const { startDate, endDate } = req.query;
   let filterClause = '';
   let params: any[] = [];
@@ -25,14 +26,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
     const total = totalResult.rows[0].total;
 
-    // Moyennes des notes (y compris dessert_rating)
+    // Moyennes des notes pour le plat principal, son goût, l'accompagnement, son goût et la portion
     const averagesResult = await pool.query(
       `SELECT 
-         AVG(appetizer_rating) AS avg_appetizer, 
-         AVG(main_course_rating) AS avg_main_course, 
-         AVG(taste_rating) AS avg_taste, 
-         AVG(portion_rating) AS avg_portion,
-         AVG(dessert_rating) AS avg_dessert
+         AVG(main_dish_rating) AS avg_main_dish, 
+         AVG(main_dish_taste_rating) AS avg_main_taste, 
+         AVG(accompaniment_rating) AS avg_accompaniment, 
+         AVG(accompaniment_taste_rating) AS avg_accompaniment_taste, 
+         AVG(portion_rating) AS avg_portion
        FROM feedback ${filterClause}`,
       params
     );
@@ -45,9 +46,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
-    // Groupement par date (pour le graphique linéaire)
+    // Groupement par date pour afficher l'évolution des feedbacks
     const groupByDateResult = await pool.query(
-      `SELECT DATE(date) as feedback_date, COUNT(*) as count 
+      `SELECT DATE(date) AS feedback_date, COUNT(*) AS count 
        FROM feedback ${filterClause} 
        GROUP BY feedback_date 
        ORDER BY feedback_date ASC`,
@@ -55,61 +56,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Distribution des notes pour chaque critère
-    const distAppetizerResult = await pool.query(
-      `SELECT appetizer_rating as rating, COUNT(*) as count
-       FROM feedback ${filterClause}
-       GROUP BY appetizer_rating
-       ORDER BY appetizer_rating`,
-      params
-    );
     const distMainCourseResult = await pool.query(
-      `SELECT main_course_rating as rating, COUNT(*) as count
+      `SELECT main_dish_rating AS rating, COUNT(*) AS count
        FROM feedback ${filterClause}
-       GROUP BY main_course_rating
-       ORDER BY main_course_rating`,
+       GROUP BY main_dish_rating
+       ORDER BY main_dish_rating`,
       params
     );
     const distTasteResult = await pool.query(
-      `SELECT taste_rating as rating, COUNT(*) as count
+      `SELECT main_dish_taste_rating AS rating, COUNT(*) AS count
        FROM feedback ${filterClause}
-       GROUP BY taste_rating
-       ORDER BY taste_rating`,
+       GROUP BY main_dish_taste_rating
+       ORDER BY main_dish_taste_rating`,
+      params
+    );
+    const distAccompanimentResult = await pool.query(
+      `SELECT accompaniment_rating AS rating, COUNT(*) AS count
+       FROM feedback ${filterClause}
+       GROUP BY accompaniment_rating
+       ORDER BY accompaniment_rating`,
+      params
+    );
+    const distAccompanimentTasteResult = await pool.query(
+      `SELECT accompaniment_taste_rating AS rating, COUNT(*) AS count
+       FROM feedback ${filterClause}
+       GROUP BY accompaniment_taste_rating
+       ORDER BY accompaniment_taste_rating`,
       params
     );
     const distPortionResult = await pool.query(
-      `SELECT portion_rating as rating, COUNT(*) as count
+      `SELECT portion_rating AS rating, COUNT(*) AS count
        FROM feedback ${filterClause}
        GROUP BY portion_rating
        ORDER BY portion_rating`,
       params
     );
-    const distDessertResult = await pool.query(
-      `SELECT dessert_rating as rating, COUNT(*) as count
-       FROM feedback ${filterClause}
-       GROUP BY dessert_rating
-       ORDER BY dessert_rating`,
-      params
-    );
 
-    // Fréquence des sélections de plats (les champs chosen_starter, chosen_main_course et chosen_dessert)
-    const freqStarterResult = await pool.query(
-      `SELECT chosen_starter as dish, COUNT(*) as count
-       FROM feedback ${filterClause}
-       GROUP BY chosen_starter
-       ORDER BY count DESC`,
-      params
-    );
+    // Fréquence des sélections pour le plat principal et pour l’accompagnement
     const freqMainCourseResult = await pool.query(
-      `SELECT chosen_main_course as dish, COUNT(*) as count
+      `SELECT chosen_main_course AS dish, COUNT(*) AS count
        FROM feedback ${filterClause}
        GROUP BY chosen_main_course
        ORDER BY count DESC`,
       params
     );
-    const freqDessertResult = await pool.query(
-      `SELECT chosen_dessert as dish, COUNT(*) as count
+    const freqAccompanimentResult = await pool.query(
+      `SELECT chosen_accompaniment AS dish, COUNT(*) AS count
        FROM feedback ${filterClause}
-       GROUP BY chosen_dessert
+       GROUP BY chosen_accompaniment
        ORDER BY count DESC`,
       params
     );
@@ -120,16 +114,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       finished: finishedResult.rows,
       groupByDate: groupByDateResult.rows,
       distribution: {
-        appetizer: distAppetizerResult.rows,
         mainCourse: distMainCourseResult.rows,
         taste: distTasteResult.rows,
+        accompaniment: distAccompanimentResult.rows,
+        accompaniment_taste: distAccompanimentTasteResult.rows,
         portion: distPortionResult.rows,
-        dessert: distDessertResult.rows,
       },
       dishFrequencies: {
-        starter: freqStarterResult.rows,
         mainCourse: freqMainCourseResult.rows,
-        dessert: freqDessertResult.rows,
+        accompaniment: freqAccompanimentResult.rows,
       },
     });
   } catch (error) {

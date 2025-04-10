@@ -2,18 +2,21 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
   }
   
   .starRow {
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: space-evenly;
   }
   
   .activeStar {
     color: #F44336; /* Couleur pour l'étoile sélectionnée */
     border-radius: 4px;
     transition: color 0.3s ease, transform 0.3s ease;
+
   }
   
   .inactiveStar {
@@ -27,6 +30,7 @@
     border-radius: 12px;
     padding: 8px;
     display: inline-block;
+    width: 75%;
     /* Supprime la box-shadow ici si elle était définie */
   }
 
