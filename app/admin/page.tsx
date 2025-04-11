@@ -531,6 +531,20 @@ export default function AdminPanel() {
                   options={barChartOptions}
                 />
               </div>
+              <div className={styles.commentsSection} style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #ccc' }}>
+                <h3>Commentaires</h3>
+                {stats.comments && stats.comments.length > 0 ? (
+                  <ul>
+                    {stats.comments.map((item: any, index: number) => (
+                      <li key={index}>
+                        <strong>{new Date(item.date).toLocaleDateString('fr-FR')}</strong> : {item.comment}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Aucun commentaire disponible pour la période sélectionnée.</p>
+                )}
+              </div>
             </div>
           ) : (
             <p>Aucune statistique disponible pour la période sélectionnée.</p>

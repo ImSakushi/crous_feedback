@@ -108,6 +108,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
+    // Récupération des commentaires non vides
+    let commentsQuery = `SELECT comment, date FROM feedback `;
+    if (filterClause) {
+      commentsQuery += ` ${filterClause} AND comment IS NOT NULL AND comment <> '' ORDER BY date DESC`;
+    } else {
+      commentsQuery += `WHERE comment IS NOT NULL AND comment <> '' ORDER BY date DESC`;
+    }
+    const commentsResult = await pool.query(commentsQuery, params);
+
     res.status(200).json({
       total,
       averages: averagesResult.rows[0],
@@ -124,6 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         mainCourse: freqMainCourseResult.rows,
         accompaniment: freqAccompanimentResult.rows,
       },
+      comments: commentsResult.rows
     });
   } catch (error) {
     console.error(error);
