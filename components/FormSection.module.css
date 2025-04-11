@@ -8,7 +8,7 @@
   .titleContainer {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 0px;
     justify-content: flex-start;
   }
   
@@ -27,6 +27,7 @@
   .subtitle {
     font-size: 16px;
     color: #9E9E9E;
+    margin-top: 0;
     margin-bottom: 12px;
     display: flex;
     justify-content: flex-start;

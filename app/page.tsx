@@ -59,20 +59,12 @@ export default function HomePage() {
 
       {/* Contenu principal */}
       <main className={styles.main}>
-        {/* Section "Qui sommes-nous ?" */}
-        <section className={styles.aboutSection}>
-          <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
-          <p className={styles.sectionText}>
-          Discu-Table est une initiative du CROUS Crew, un groupe d’étudiants en MMI à l’IUT Bordeaux Montaigne. Notre objectif est de permettre aux étudiants de découvrir, évaluer et mieux comprendre ce qu’ils mangent au RU, en mettant en avant l’origine et la préparation des plats.
-          </p>
-        </section>
-
         {/* Section "Repas du jour" */}
         <section className={styles.menuSection}>
           <h2 className={styles.sectionTitle}>Repas du jour</h2>
           <div className={styles.menuInfo}>
             <p className={styles.sectionText}>
-              Aujourd'hui, nous sommes le <strong>{formattedDate}</strong> et il s’agit du service <strong>{mealPeriod}</strong>.
+              Aujourd'hui, nous sommes le <strong>{formattedDate}</strong> et il s'agit du service <strong>{mealPeriod}</strong>.
             </p>
 
             {menu ? (
@@ -108,21 +100,39 @@ export default function HomePage() {
           </div>
         </section>
 
+
+        {/* Section "Qui sommes-nous ?" */}
+        <section className={styles.aboutSection}>
+          <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
+          <p className={styles.sectionText}>
+          Discu-Table est une initiative du CROUS Crew, un groupe d'étudiants en MMI à l'IUT Bordeaux Montaigne. Notre objectif est de permettre aux étudiants de découvrir, évaluer et mieux comprendre ce qu'ils mangent au RU, en mettant en avant l'origine et la préparation des plats.
+          </p>
+        </section>
+
+        {/* Section "Selection des plats" */}
+        <section className={styles.menuSection}>
+          <h2 className={styles.sectionTitle}>Selection des plats</h2>
+          <p className={styles.sectionText}>
+            Tous les six semaines, le Conseil de Restauration élabore les menus du RU. Il réunit des étudiants, des membres du Crous, une diététicienne et un représentant budgétaire.
+            Les plats sont choisis collectivement pour offrir une cuisine variée, équilibrée et appréciée du plus grand nombre. La diététicienne veille à l'équilibre nutritionnel, tandis que le budget est rigoureusement respecté.
+          </p>
+        </section>
+
         {/* Section "Infos pratiques" */}
         <section className={styles.infoSection}>
           <h2 className={styles.sectionTitle}>Infos pratiques</h2>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
-              <img src="/images/phone-icon.png" alt="Contact" className={styles.infoIcon} />
-              <p>Contact : (01 23 45 67 89)</p>
+              <p className={styles.infoIcon}>📞 Contact</p>
+              <p>01 23 45 67 89</p>
             </div>
             <div className={styles.infoItem}>
-              <img src="/images/payment-icon.png" alt="Paiement" className={styles.infoIcon} />
-              <p>Paiement par carte bancaire et Izly</p>
+              <p className={styles.infoIcon}>💳 Paiement</p>
+              <p>Carte bancaire et Izly</p>
             </div>
             <div className={styles.infoItem}>
-              <img src="/images/time-icon.png" alt="Horaires" className={styles.infoIcon} />
-              <p>Horaires : 11h30 - 14h / 18h - 20h</p>
+              <p className={styles.infoIcon}>⏰ Horaires</p>
+              <p>11h30 - 14h / 18h - 20h</p>
             </div>
           </div>
         </section>
