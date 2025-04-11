@@ -16,7 +16,7 @@ export default function HomePage() {
   const [mealPeriod, setMealPeriod] = useState<'midi' | 'soir'>('midi');
 
   useEffect(() => {
-    // Récupération de la date courante au format YYYY-MM-DD
+    // Récupération de la date au format YYYY-MM-DD
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     setCurrentDate(dateStr);
@@ -26,7 +26,7 @@ export default function HomePage() {
     const period = hour < 18 ? 'midi' : 'soir';
     setMealPeriod(period);
 
-    // Formatage en français, ex: "mercredi 12 avril 2023"
+    // Formatage de la date en français (ex: "mercredi 12 avril 2023")
     const formatted = now.toLocaleDateString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
@@ -69,14 +69,6 @@ export default function HomePage() {
 
             {menu ? (
               <div className={styles.menuGrid}>
-                {/* Entrées */}
-                <div className={styles.menuBox}>
-                  <ul className={styles.dishList}>
-                    {menu.starters.map((starter, index) => (
-                      <li key={index}>{starter}</li>
-                    ))}
-                  </ul>
-                </div>
 
                 {/* Plat principal */}
                 <div className={styles.menuBox}>
@@ -85,6 +77,17 @@ export default function HomePage() {
                     {menu.main_courses.map((dish, index) => (
                       <li key={index}>{dish}</li>
                     ))}
+                  </ul>
+                </div>
+
+                {/* Section Dessert en dur */}
+                <div className={styles.menuBox}>
+                  <h3 className={styles.menuSubTitle}>Dessert</h3>
+                  <ul className={styles.dishList}>
+                    <li>Yaourt</li>
+                    <li>Fruit de saisons</li>
+                    <li>En supplément</li>
+                    <li>Pâtisseries américaines</li>
                   </ul>
                 </div>
               </div>
@@ -100,21 +103,20 @@ export default function HomePage() {
           </div>
         </section>
 
-
         {/* Section "Qui sommes-nous ?" */}
         <section className={styles.aboutSection}>
           <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
           <p className={styles.sectionText}>
-          Discu-Table est une initiative du CROUS Crew, un groupe d'étudiants en MMI à l'IUT Bordeaux Montaigne. Notre objectif est de permettre aux étudiants de découvrir, évaluer et mieux comprendre ce qu'ils mangent au RU, en mettant en avant l'origine et la préparation des plats.
+            Discu-Table est une initiative du CROUS Crew, un groupe d'étudiants en MMI à l'IUT Bordeaux Montaigne. Notre objectif est de permettre aux étudiants de découvrir, évaluer et mieux comprendre ce qu'ils mangent au RU, en mettant en avant l'origine et la préparation des plats.
           </p>
         </section>
 
-        {/* Section "Selection des plats" */}
+        {/* Section "Sélection des plats" */}
         <section className={styles.menuSection}>
           <h2 className={styles.sectionTitle}>Selection des plats</h2>
           <p className={styles.sectionText}>
             Tous les six semaines, le Conseil de Restauration élabore les menus du RU. Il réunit des étudiants, des membres du Crous, une diététicienne et un représentant budgétaire.
-            Les plats sont choisis collectivement pour offrir une cuisine variée, équilibrée et appréciée du plus grand nombre. La diététicienne veille à l'équilibre nutritionnel, tandis que le budget est rigoureusement respecté.
+            Les plats sont choisis collectivement pour offrir une cuisine variée, équilibrée et appréciée du plus grand nombre. La diététicienne veille à l'équilibre nutritionnel, tandis que le budget est rigoureusement respecté. Avec Discu-Table, vous pouvez aussi faire entendre votre voix et participer à l'amélioration continue des menus.
           </p>
         </section>
 

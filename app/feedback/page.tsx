@@ -1,256 +1,157 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import FormSection from '@/components/FormSection';
-import CheckboxGroup from '@/components/CheckboxGroup';
-import StarRating from '@/components/StarRating';
-import RadioOption from '@/components/RadioOption';
-import DropdownSelect from '@/components/DropdownSelect';
-import { useFeedbackStore } from '@/store/feedback-store';
-import { useRouter } from 'next/navigation';
-import styles from '../page.module.css';
+import Link from 'next/link';
+import styles from './page.module.css';
 
-export default function MealFeedbackPage() {
-  // États provenant du store (nouveaux attributs pour le plat principal et l'accompagnement)
-  const {
-    mainDishRating,
-    setMainDishRating,
-    mainDishTasteRating,
-    setMainDishTasteRating,
-    accompanimentRating,
-    setAccompanimentRating,
-    accompanimentTasteRating,
-    setAccompanimentTasteRating,
-    portionRating,
-    setPortionRating,
-    finishedPlate,
-    setFinishedPlate,
-    notEatenReason,
-    setNotEatenReason,
-    comment,
-    setComment,
-    resetForm,
-  } = useFeedbackStore();
+interface Menu {
+  starters: string[];
+  main_courses: string[];
+}
 
-  // New local state for combined dish & accompaniment selection
-  const [selectedDishes, setSelectedDishes] = useState<string[]>([]);
-  const [customDish, setCustomDish] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [menu, setMenu] = useState<{ main_dishes: string[]; accompaniments: string[] } | null>(null);
-  const router = useRouter();
+export default function HomePage() {
+  const [currentDate, setCurrentDate] = useState('');
+  const [formattedDate, setFormattedDate] = useState('');
+  const [menu, setMenu] = useState<Menu | null>(null);
+  const [mealPeriod, setMealPeriod] = useState<'midi' | 'soir'>('midi');
 
-  const reasonOptions = ["Portion trop grosse", "Pas à mon goût", "Pas très faim", "Autre"];
-
-  // Récupération du menu du jour via l'API (les données comportent les options pour le plat principal et l'accompagnement)
   useEffect(() => {
-    resetForm();
+    // Récupération de la date au format YYYY-MM-DD
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
+    setCurrentDate(dateStr);
+
+    // Détermination de la période (midi / soir)
     const hour = now.getHours();
-    const mealPeriod = hour < 18 ? 'midi' : 'soir';
-    fetch(`/api/menu?date=${dateStr}&mealPeriod=${mealPeriod}`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+    const period = hour < 18 ? 'midi' : 'soir';
+    setMealPeriod(period);
+
+    // Formatage de la date en français (ex: "mercredi 12 avril 2023")
+    const formatted = now.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    setFormattedDate(formatted);
+
+    // Récupération du menu via l'API
+    fetch(`/api/menu?date=${dateStr}&mealPeriod=${period}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data) {
-          // On suppose ici que l'API retourne un objet avec "main_courses" et "accompaniments"
-          setMenu({
-            main_dishes: data.main_courses,
-            accompaniments: data.accompaniments || []
-          });
+          setMenu(data);
         }
       })
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   }, []);
-
-  const handleSubmit = async () => {
-    const finalDishes = [...selectedDishes];
-    if (selectedDishes.includes("other") && customDish.trim() !== "") {
-      const index = finalDishes.indexOf("other");
-      if (index !== -1) {
-        finalDishes[index] = customDish;
-      }
-    }
-
-    if (
-      mainDishRating === 0 ||
-      mainDishTasteRating === 0 ||
-      accompanimentRating === 0 ||
-      accompanimentTasteRating === 0 ||
-      portionRating === 0 ||
-      finishedPlate === null ||
-      (finishedPlate === false && !notEatenReason)
-    ) {
-      alert('Formulaire incomplet. Merci de remplir tous les champs obligatoires.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          main_dish_rating: mainDishRating,
-          main_dish_taste_rating: mainDishTasteRating,
-          accompaniment_rating: accompanimentRating,
-          accompaniment_taste_rating: accompanimentTasteRating,
-          portion_rating: portionRating,
-          finished_plate: finishedPlate,
-          not_eaten_reason: notEatenReason,
-          comment: comment,
-          chosen_main_dish: finalDishes.join(", "),
-          date: new Date().toISOString(),
-        }),
-      });
-      if (res.ok) {
-        resetForm();
-        setSelectedDishes([]);
-        setCustomDish('');
-        router.push('/thankyou');
-      } else {
-        setMessage("Erreur lors de l'envoi.");
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Erreur lors de l'envoi.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className={styles.container}>
-      <h1>Ta contribution sur le repas du jour</h1>
+      {/* Header */}
+      <header className={styles.header}>
+        <h1 className={styles.discuTitle}>Discu-Table</h1>
+        <nav className={styles.nav}>
+          <Link href="/" className={styles.navLink}>Accueil</Link>
+          <Link href="/feedback" className={styles.navLink}>Feedback</Link>
+        </nav>
+      </header>
 
-      { /* Combined Selection Section */ }
-      {(() => {
-        const combinedOptions = menu ? [...menu.main_dishes, ...menu.accompaniments] : [];
-        return (
-          <FormSection
-            title="Quel plat et accompagnement as-tu choisi ?"
-            icon={<span role="img" aria-label="repas">🍽️</span>}
-            subtitle="Sélectionnez une ou plusieurs options"
-          >
-            <CheckboxGroup
-              options={combinedOptions}
-              selected={selectedDishes}
-              onSelect={setSelectedDishes}
-              customValue={customDish}
-              onCustomChange={setCustomDish}
-              label=""
-              className="customInput"
-            />
-          </FormSection>
-        );
-      })()}
+      {/* Contenu principal */}
+      <main className={styles.main}>
+        {/* Section "Repas du jour" */}
+        <section className={styles.menuSection}>
+          <h2 className={styles.sectionTitle}>Repas du jour</h2>
+          <div className={styles.menuInfo}>
+            <p className={styles.sectionText}>
+              Aujourd'hui, nous sommes le <strong>{formattedDate}</strong> et il s'agit du service <strong>{mealPeriod}</strong>.
+            </p>
 
-      {/* 2. Note le plat principal */}
-      <FormSection
-        title="Note le plat principal"
-        icon={<span role="img" aria-label="plat">🍽️</span>}
-        subtitle="Comment as-tu trouvé le plat principal ?"
-      >
-        <StarRating rating={mainDishRating} onRatingChange={setMainDishRating} />
-      </FormSection>
+            {menu ? (
+              <div className={styles.menuGrid}>
+                {/* Entrées */}
+                <div className={styles.menuBox}>
+                  <ul className={styles.dishList}>
+                    {menu.starters.map((starter, index) => (
+                      <li key={index}>{starter}</li>
+                    ))}
+                  </ul>
+                </div>
 
-      {/* 3. Goût général du plat */}
-      <FormSection
-        title="Et le goût général du plat ?"
-        icon={<span role="img" aria-label="goût">🍴</span>}
-        subtitle="Le plat était-il bien assaisonné ?"
-      >
-        <StarRating rating={mainDishTasteRating} onRatingChange={setMainDishTasteRating} />
-        {mainDishTasteRating === 1 && (
-          <DropdownSelect
-            options={["Trop salé", "Pas assez salé", "Trop épicé", "Fade", "Mauvais goût", "Autre"]}
-            value={notEatenReason || ""}
-            onChange={setNotEatenReason}
-            placeholder="Pourquoi cette note ?"
-          />
-        )}
-      </FormSection>
+                {/* Plat principal */}
+                <div className={styles.menuBox}>
+                  <h3 className={styles.menuSubTitle}>Plat principal</h3>
+                  <ul className={styles.dishList}>
+                    {menu.main_courses.map((dish, index) => (
+                      <li key={index}>{dish}</li>
+                    ))}
+                  </ul>
+                </div>
 
-      {/* 4. Note l’accompagnement */}
-      <FormSection
-        title="Note l’accompagnement"
-        icon={<span role="img" aria-label="accompagnement">🥦</span>}
-        subtitle="Comment as-tu trouvé l’accompagnement ?"
-      >
-        <StarRating rating={accompanimentRating} onRatingChange={setAccompanimentRating} />
-      </FormSection>
+                {/* Section Dessert en dur */}
+                <div className={styles.menuBox}>
+                  <h3 className={styles.menuSubTitle}>Dessert</h3>
+                  <ul className={styles.dishList}>
+                    <li>Yaourt</li>
+                    <li>Fruit de saisons</li>
+                    <li>En supplément</li>
+                    <li>Pâtisseries américaines</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <p className={styles.sectionText}>Aucun menu disponible pour cette date.</p>
+            )}
 
-      {/* 5. Goût de l’accompagnement */}
-      <FormSection
-        title="Et le goût de l’accompagnement ?"
-        icon={<span role="img" aria-label="goût">🍽️</span>}
-        subtitle="L’accompagnement était-il bien assaisonné ?"
-      >
-        <StarRating rating={accompanimentTasteRating} onRatingChange={setAccompanimentTasteRating} />
-        {accompanimentTasteRating === 1 && (
-          <DropdownSelect
-            options={["Trop salé", "Pas assez salé", "Trop épicé", "Fade", "Mauvais goût", "Autre"]}
-            value={notEatenReason || ""}
-            onChange={setNotEatenReason}
-            placeholder="Pourquoi cette note ?"
-          />
-        )}
-      </FormSection>
+            <div className={styles.buttonContainer}>
+              <Link href="/feedback">
+                <button className={styles.noteButton}>Notez le repas du jour</button>
+              </Link>
+            </div>
+          </div>
+        </section>
 
-      {/* 6. La quantité servie */}
-      <FormSection
-        title="La quantité servie (plat + accompagnement)"
-        icon={<span role="img" aria-label="portion">🍱</span>}
-        subtitle="La portion globale était-elle suffisante ?"
-      >
-        <StarRating rating={portionRating} onRatingChange={setPortionRating} />
-      </FormSection>
+        {/* Section "Qui sommes-nous ?" */}
+        <section className={styles.aboutSection}>
+          <h2 className={styles.sectionTitle}>Qui sommes-nous ?</h2>
+          <p className={styles.sectionText}>
+            Discu-Table est une initiative du CROUS Crew, un groupe d'étudiants en MMI à l'IUT Bordeaux Montaigne. Notre objectif est de permettre aux étudiants de découvrir, évaluer et mieux comprendre ce qu'ils mangent au RU, en mettant en avant l'origine et la préparation des plats.
+          </p>
+        </section>
 
-      {/* 7. Fini ton assiette */}
-      <FormSection
-        title="As-tu fini ton assiette ?"
-        icon={<span role="img" aria-label="assiette">🗑️</span>}
-      >
-        <div className={styles.radioGroup}>
-          <RadioOption
-            label="✅ Oui, tout mangé"
-            selected={finishedPlate === true}
-            onSelect={() => setFinishedPlate(true)}
-          />
-          <RadioOption
-            label="♻️ Non, il en restait"
-            selected={finishedPlate === false}
-            onSelect={() => setFinishedPlate(false)}
-          />
-        </div>
-        {finishedPlate === false && (
-          <DropdownSelect
-            options={reasonOptions}
-            value={notEatenReason || ""}
-            onChange={setNotEatenReason}
-            placeholder="Si non, pourquoi ?"
-          />
-        )}
-      </FormSection>
+        {/* Section "Sélection des plats" */}
+        <section className={styles.menuSection}>
+          <h2 className={styles.sectionTitle}>Selection des plats</h2>
+          <p className={styles.sectionText}>
+            Tous les six semaines, le Conseil de Restauration élabore les menus du RU. Il réunit des étudiants, des membres du Crous, une diététicienne et un représentant budgétaire.
+            Les plats sont choisis collectivement pour offrir une cuisine variée, équilibrée et appréciée du plus grand nombre. La diététicienne veille à l'équilibre nutritionnel, tandis que le budget est rigoureusement respecté. Avec Discu-Table, vous pouvez aussi faire entendre votre voix et participer à l'amélioration continue des menus.
+          </p>
+        </section>
 
-      {/* 8. Commentaire facultatif */}
-      <FormSection
-        title="Un commentaire ? (facultatif)"
-        icon={<span role="img" aria-label="commentaire">💬</span>}
-      >
-        <textarea
-          placeholder="Partagez votre avis..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={4}
-          className={styles.textarea}
-        />
-      </FormSection>
+        {/* Section "Infos pratiques" */}
+        <section className={styles.infoSection}>
+          <h2 className={styles.sectionTitle}>Infos pratiques</h2>
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <p className={styles.infoIcon}>📞 Contact</p>
+              <p>01 23 45 67 89</p>
+            </div>
+            <div className={styles.infoItem}>
+              <p className={styles.infoIcon}>💳 Paiement</p>
+              <p>Carte bancaire et Izly</p>
+            </div>
+            <div className={styles.infoItem}>
+              <p className={styles.infoIcon}>⏰ Horaires</p>
+              <p>11h30 - 14h / 18h - 20h</p>
+            </div>
+          </div>
+        </section>
+      </main>
 
-      {/* 9. Bouton d’envoi */}
-      <button onClick={handleSubmit} className={styles.submitButton} disabled={loading}>
-        Envoyer
-      </button>
-      {message && <p>{message}</p>}
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <p className={styles.footerText}>© {new Date().getFullYear()} Discu-Table - Tous droits réservés</p>
+      </footer>
     </div>
   );
 }
