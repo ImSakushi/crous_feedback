@@ -1,7 +1,8 @@
 .container {
   margin: 12px 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 1rem;
 }
 
 .select {

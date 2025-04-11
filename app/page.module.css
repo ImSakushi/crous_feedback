@@ -358,6 +358,11 @@ a.secondary {
   justify-content: space-around;
 }
 
+.infoGrid {
+  display: flex;
+  gap: 4rem;
+}
+
 .menuSection {
   background-color: #fff;
   padding: 1.5rem;

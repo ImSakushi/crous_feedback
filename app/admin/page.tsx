@@ -450,7 +450,7 @@ export default function AdminPanel() {
                     datasets: [
                       {
                         data: stats.finished.map((item: any) => parseInt(item.count)),
-                        backgroundColor: ['#4CAF50', '#F44336'],
+                        backgroundColor: ['#F44336', '#4CAF50'],
                       },
                     ],
                   }}
