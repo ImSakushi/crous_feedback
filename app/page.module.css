@@ -104,13 +104,16 @@ a.secondary {
 
 .noteButton {
   background-color: #e10512;
+  width: 100%;
   color: #fff;
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
   font-size: 1rem;
+  font-family: var(--font-marianne);
   font-weight: bold;
   cursor: pointer;
+  margin-top: 1rem;
   transition: background-color 0.3s ease;
 }
 
@@ -126,8 +129,7 @@ a.secondary {
   background-color: #ffffff;
   padding: 1rem 2rem;
   text-align: center;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-
+  width: 100%;
 }
 
 .footerText {
@@ -185,6 +187,7 @@ a.secondary {
 .container {
   max-width: 800px;
   margin: 20px auto;
+  gap: 48px;
   padding: 20px;
   text-align: left;
   display: flex;
@@ -199,19 +202,6 @@ a.secondary {
   margin-top: 12px;
 }
 
-<<<<<<< HEAD
-=======
-.radioInput {
-  border: none;
-  border-bottom: 1px solid #ccc;
-  padding: 8px;
-  font-size: 16px;
-  outline: none;
-  font-family: var(--font-marianne);
-  background: transparent;
-  margin-left: 8px;
-}
->>>>>>> 0aabbb6bbd6e4b662bdb4b6db458377a335e16fa
 
 
 /* =========================== */
@@ -281,6 +271,7 @@ a.secondary {
 
   .header, .footer {
     padding: 1rem;
+    
   }
 
   .mainContent {
@@ -307,7 +298,10 @@ a.secondary {
   align-items: center;
   justify-content: space-between;
   background-color: #fff; /* white background */
-  padding: 1rem 2rem;
+  padding: 1.5rem;
+  margin-bottom: 4rem;
+  gap: 2rem;
+  width: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* bottom shadow */
 }
 
@@ -365,6 +359,13 @@ a.secondary {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
+  padding-bottom: 3rem;
+  width: 100%;
+}
+
+.infoIcon {
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .menuItem {
@@ -384,4 +385,9 @@ a.secondary {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
+  width: 100%;
+}
+
+.infoSection {
+  box-shadow: none;
 }
