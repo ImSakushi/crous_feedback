@@ -7,15 +7,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
-  const { id, starters, mainCourses, desserts } = req.body;
-  if (!id || !starters || !mainCourses || desserts === undefined) {
-    return res.status(400).json({ error: 'Id, starters, mainCourses et desserts sont requis' });
+  // On attend les champs : id et mainCourses uniquement.
+  const { id, mainCourses } = req.body;
+  if (!id || !mainCourses) {
+    return res.status(400).json({ error: 'Id et mainCourses sont requis' });
   }
 
   try {
     const result = await pool.query(
-      'UPDATE menus SET starters = $1, main_courses = $2, desserts = $3 WHERE id = $4 RETURNING *',
-      [starters, mainCourses, desserts, id]
+      'UPDATE menus SET main_courses = $1 WHERE id = $2 RETURNING *',
+      [mainCourses, id]
     );
     res.status(200).json({ message: 'Menu mis à jour', menu: result.rows[0] });
   } catch (error) {
