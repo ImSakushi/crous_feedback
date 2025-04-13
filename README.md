@@ -1,76 +1,123 @@
-# RU-Feedback
 
-**rufeedback** est une application web de feedback pour les repas du Resto U. Ce projet, construit avec [Next.js](https://nextjs.org) et TypeScript, permet aux utilisateurs de donner leur avis sur les repas (entrée, plat, dessert) et aux administrateurs de gérer les menus ainsi que de visualiser des statistiques détaillées.
+# Discu-Table
 
-<img width="658" alt="image" src="https://github.com/user-attachments/assets/f8e55d3e-6953-4113-b79a-a1dc6faaa054" />
+Discu-Table est une application web complète conçue pour collecter des feedbacks sur les repas du RU (Restaurant Universitaire) et permettre aux administrateurs de gérer les menus, les utilisateurs et d’analyser les données de satisfaction. Ce projet, développé avec Next.js et TypeScript, intègre une interface utilisateur moderne, des API robustes et des outils de statistiques et de suivi, le tout en s’appuyant sur une base de données PostgreSQL.
 
 ---
 
 ## Table des matières
 
 - [Fonctionnalités](#fonctionnalités)
-- [Architecture et structure du projet](#architecture-et-structure-du-projet)
+- [Architecture du projet](#architecture-du-projet)
+  - [Structure des dossiers](#structure-des-dossiers)
+  - [Rôles des principales sections](#rôles-des-principales-sections)
 - [Installation et configuration](#installation-et-configuration)
+  - [Prérequis](#prérequis)
+  - [Variables d’environnement](#variables-denvironnement)
 - [Utilisation en développement](#utilisation-en-développement)
-- [API et endpoints](#api-et-endpoints)
+- [API et Endpoints](#api-et-endpoints)
 - [Technologies utilisées](#technologies-utilisées)
+- [Processus de déploiement](#processus-de-déploiement)
 - [Contribution](#contribution)
 - [Licence](#licence)
+- [Remerciements](#remerciements)
 
 ---
 
 ## Fonctionnalités
 
-- **Feedback utilisateur**  
-  - Évaluation du repas du jour (entrée, plat, dessert, goût général et portion)
-  - Sélection et saisie d’options prédéfinies ou personnalisées
-  - Saisie de commentaires et raisons en cas de plat non terminé
+- **Feedback Utilisateur**  
+  - Permet aux utilisateurs de noter différents aspects du repas (plat principal, goût, accompagnement, portion, etc.).
+  - Proposition d’une sélection combinée pour choisir le plat et l’accompagnement.
+  - Possibilité de laisser un commentaire et de choisir une option “Autre” pour des réponses personnalisées.
 
-- **Gestion des menus**  
-  - Visualisation et ajout/modification des menus selon la date et la période (midi/soir)
-  - Possibilité d’ajouter plusieurs entrées, plats et desserts
+- **Gestion des Menus**  
+  - Consultation et mise à jour des menus (entrée, plat, dessert ou configuration simplifiée avec plat et accompagnement).
+  - Ajout, modification et suppression des menus via des formulaires dédiés.
+  - Récupération du menu du jour selon la date et le créneau horaire (midi ou soir).
 
-- **Interface administrateur**  
-  - Connexion sécurisée pour l’admin (avec gestion de cookie et JWT)
-  - Tableau de bord pour la gestion des menus et consultation des statistiques
-  - Module de gestion des utilisateurs accessible aux superadmins (création, modification, suppression)
-  - Statistiques détaillées et graphiques (linéaire, camembert et barre) pour analyser les feedbacks
+- **Interface Administrateur**  
+  - Authentification sécurisée (JWT et cookies HTTP-only).
+  - Tableau de bord avec onglets pour la gestion des menus, des statistiques et des utilisateurs.
+  - Gestion du cycle de vie des utilisateurs (création, modification, suppression) réservée aux superadmins.
+  - Affichage de graphiques détaillés (linéaire, camembert et barres) basés sur les feedbacks collectés.
 
-- **Expérience utilisateur optimisée**  
-  - Utilisation de composants réactifs (Star Rating, Dropdown Select, Radio Buttons) et d’une interface moderne
-  - Gestion des erreurs et page 404 personnalisée
+- **Suivi et Statistiques**  
+  - Agrégation et visualisation des feedbacks : moyennes, répartition par note, évolution dans le temps.
+  - Consultation des commentaires avec dates de soumission.
+  - Mise à disposition d’un endpoint pour le suivi des visites et autres événements (tracking).
 
 ---
 
-## Architecture et structure du projet
+## Architecture du projet
 
-Le projet suit une architecture modulaire avec séparation claire entre le front-end et les API :
+L’architecture de Discu-Table est organisée de manière modulaire pour faciliter la maintenabilité et l’extension du système. Les responsabilités sont clairement séparées entre le front-end, les API backend et la configuration de la base de données.
 
-```
-rufeedback/
+### Structure des dossiers
+
+```plaintext
+Discu-Table/
 ├── Procfile
 ├── README.md
-├── app/                     # Répertoire Next.js App Router
-│   ├── admin/               # Pages et composants d'administration
-│   ├── feedback/            # Page de feedback utilisateur
-│   ├── history/             # Historique des feedbacks
-│   ├── layout.tsx           # Layout général avec intégration de la police et bouton d’accès admin
+├── app/                     # Utilise le nouveau système App Router de Next.js
+│   ├── admin/               # Pages et composants pour l'administration
+│   │   ├── login/           # Page de connexion administrateur
+│   │   ├── users/           # Gestion des utilisateurs (création, édition, liste)
+│   │   └── admin.module.css # Styles spécifiques à l’administration
+│   ├── feedback/            # Interface de collecte de feedback pour les repas
+│   ├── history/             # Historique des feedbacks et menus
+│   ├── thankyou/            # Page de remerciements après soumission
+│   ├── layout.tsx           # Layout global (intègre notamment la police et le bouton admin)
 │   ├── not-found.tsx        # Page 404 personnalisée
-│   └── page.tsx             # Page d'accueil
-├── components/              # Composants UI réutilisables (StarRating, FormSection, DropdownSelect, etc.)
-├── constants/               # Fichier des constantes (ex. couleurs)
+│   └── page.tsx             # Page d’accueil (présentation du repas du jour et informations)
+├── components/              # Composants UI réutilisables (ex. StarRating, DropdownSelect)
+├── constants/               # Constantes et paramètres (ex. couleurs)
 ├── eslint.config.mjs        # Configuration ESLint personnalisée
-├── lib/                     # Configuration et accès à la base de données (PostgreSQL)
-├── middleware.ts            # Middleware Next.js pour la gestion de l'authentification des pages admin
-├── next.config.ts           # Configuration de l’application Next.js
-├── pages/                   # API routes
-│   └── api/                 # Endpoints pour feedback, menus, authentification, statistiques, et gestion des utilisateurs
-├── public/                  # Ressources statiques (polices, favicon, etc.)
-├── store/                   # Store Zustand pour la gestion d’état (feedback store)
-└── styles/                  # Feuilles de style globales
+├── lib/                     # Connexion et accès à la base de données (PostgreSQL)
+├── middleware.ts            # Middleware Next.js pour sécuriser les routes /admin
+├── next-env.d.ts            # Configuration TypeScript de Next.js
+├── next.config.ts           # Configuration globale de l’application Next.js
+├── pages/                   # Routes API classiques
+│   └── api/                 # Endpoints pour le feedback, menus, authentification, statistiques, etc.
+├── public/                  # Fichiers statiques (polices, favicon, icônes)
+├── store/                   # Gestion d’état avec Zustand (Feedback Store)
+└── styles/                  # Feuilles de styles globales et spécifiques
 ```
 
-Chaque section du projet est organisée pour faciliter la maintenance, le développement collaboratif et l’ajout de nouvelles fonctionnalités.
+### Rôles des principales sections
+
+- **`app/`**  
+  Regroupe toutes les pages côté client gérées par le nouveau système d’itinéraires (App Router). On y trouve :
+  - La page d’accueil qui affiche le menu du jour et des informations sur le projet.
+  - La page de feedback pour noter et commenter les repas.
+  - L’interface d’administration regroupant la gestion des menus, des statistiques et des utilisateurs.
+  - La gestion des erreurs et des pages non trouvées.
+
+- **`components/`**  
+  Contient des composants UI modulaires et réutilisables tels que :
+  - **StarRating** pour les évaluations par étoiles.
+  - **DropdownSelect, RadioOption, CheckboxGroup** pour les choix et formulaires.
+  - **FormSection** pour structurer les formulaires de saisie.
+
+- **`pages/api/`**  
+  Définit les endpoints REST pour :
+  - L’envoi et la récupération des feedbacks.
+  - La gestion des menus (récupération, ajout, mise à jour).
+  - L’authentification et la gestion de session (login, logout, vérification du token).
+  - La gestion des utilisateurs (accessible uniquement aux superadmins).
+  - La collecte de statistiques et le tracking d’événements.
+
+- **`lib/`**  
+  Fournit la configuration de la connexion à PostgreSQL via un pool de connexions, utilisé par l’ensemble des endpoints pour interagir avec la base de données.
+
+- **`middleware.ts`**  
+  Intercepte les requêtes vers les routes d’administration pour vérifier la présence et la validité d’un JWT, redirigeant vers la page de connexion en cas d’échec.
+
+- **`store/`**  
+  Implémente le store Zustand pour gérer et persister l’état du formulaire de feedback côté client.
+
+- **`styles/`**  
+  Centralise les styles globaux et spécifiques, notamment pour le responsive design et la gestion de thèmes clairs/sombres.
 
 ---
 
@@ -79,105 +126,134 @@ Chaque section du projet est organisée pour faciliter la maintenance, le dével
 ### Prérequis
 
 - [Node.js](https://nodejs.org) (version LTS recommandée)
+- [npm](https://www.npmjs.com)
 - [PostgreSQL](https://www.postgresql.org)
 
-### Clonage du dépôt
+### Variables d’environnement
 
-```bash
-git clone https://github.com/ImSakushi/rufeedback.git
-cd rufeedback
-```
-
-### Installation des dépendances
-
-Utilisez npm :
-
-```bash
-npm install
-```
-
-### Configuration de l’environnement
-
-Créez un fichier `.env` à la racine du projet et ajoutez-y vos variables d’environnement :
+Créez un fichier `.env` à la racine du projet avec le contenu suivant (adapté à votre environnement) :
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/votre_base
-JWT_SECRET=votre_secret_pour_JWT
+DATABASE_URL=postgres://user:password@localhost:5432/nom_de_votre_base
+JWT_SECRET=votre_clé_secrète_pour_JWT
 NODE_ENV=development
 ```
 
-Vérifiez que toutes vos variables nécessaires sont définies pour connecter l’application à PostgreSQL et sécuriser l’authentification.
+### Clonage et installation
+
+1. **Cloner le dépôt :**
+
+   ```bash
+   git clone https://github.com/ImSakushi/discu-table.git
+   cd discu-table
+   ```
+
+2. **Installer les dépendances :**
+
+   ```bash
+   npm install
+   ```
 
 ---
 
 ## Utilisation en développement
 
-Pour démarrer le serveur en mode développement :
+Pour lancer le serveur en mode développement, exécutez :
 
 ```bash
 npm run dev
 ```
 
-Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur.  
-Les modifications apportées aux fichiers dans le répertoire `app` ou `components` seront automatiquement reflétées grâce au hot-reload de Next.js.
+Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur pour voir l’application.  
+Les modifications dans le dossier `app` ou dans les composants seront automatiquement rechargées grâce au hot-reload de Next.js.
 
 ---
 
-## API et endpoints
+## API et Endpoints
 
-### Endpoints principaux
+Les endpoints de l’API se trouvent sous le dossier `pages/api/` et couvrent plusieurs domaines fonctionnels :
 
 - **Feedback**
-  - `POST /api/feedback` : Envoi du feedback utilisateur
-  - `GET /api/feedback` : Récupération de l’historique des feedbacks
+  - `POST /api/feedback` : Insère un nouveau feedback dans la base de données.
+  - `GET /api/feedback` : Récupère l’historique des feedbacks.
 
 - **Menus**
-  - `GET /api/menu?date=YYYY-MM-DD&mealPeriod=midi|soir` : Récupérer le menu d’une date et période donnée
-  - `POST /api/admin/menu` : Ajouter un nouveau menu
-  - `PUT /api/admin/menu/update` : Mettre à jour un menu existant
-  - `GET /api/admin/menus` : Récupérer la liste des menus
+  - `GET /api/menu?date=YYYY-MM-DD&mealPeriod=midi|soir` : Récupère le menu du jour correspondant aux paramètres.
+  - `POST /api/admin/menu` : Ajoute un nouveau menu dans la base.
+  - `PUT /api/admin/menu/update` : Met à jour un menu existant.
+  - `GET /api/admin/menus` : Liste tous les menus classés par date.
 
-- **Administration**
-  - `POST /api/admin/login` : Authentifier un administrateur
-  - `POST /api/admin/logout` : Déconnexion
-  - `GET /api/admin/me` : Récupération des informations de l’admin connecté
-  - `GET/POST/PUT/DELETE /api/admin/users` : Gestion des utilisateurs (accès réservé aux superadmins)
+- **Administration et Authentification**
+  - `POST /api/admin/login` : Authentifie l’administrateur et émet un token JWT.
+  - `POST /api/admin/logout` : Déconnecte l’administrateur en supprimant le token.
+  - `GET /api/admin/me` : Retourne les informations de l’admin connecté.
+  - `GET/POST/PUT/DELETE /api/admin/users` : Gestion complète des utilisateurs (accessible uniquement aux superadmins).
 
-- **Statistiques**
-  - `GET /api/admin/statistics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` : Visualiser les feedbacks et statistiques selon un intervalle de dates
+- **Statistiques et Tracking**
+  - `GET /api/admin/statistics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` : Retourne des statistiques détaillées sur les feedbacks (totaux, moyennes, distributions, commentaires).
+  - `POST /api/track` : Enregistre des événements de tracking pour analyser le trafic et les interactions utilisateur.
 
-Chaque endpoint est sécurisé et géré via des middlewares (ex. vérification du token JWT pour accès admin).
+Chaque endpoint effectue des vérifications (notamment via le middleware ou directement dans le code) pour sécuriser l’accès et garantir l’intégrité des données.
 
 ---
 
 ## Technologies utilisées
 
-- **Framework Front-end** : [Next.js](https://nextjs.org) (App Router)
-- **Langage** : TypeScript, JavaScript
-- **Base de données** : PostgreSQL (configuration via [pg](https://node-postgres.com))
-- **Authentification** : JWT, gestion des cookies avec [cookie](https://www.npmjs.com/package/cookie)
-- **Gestion d’état** : [Zustand](https://github.com/pmndrs/zustand)
-- **Graphiques** : [chart.js](https://www.chartjs.org) (intégré via React Chartjs 2)
-- **Styles** : CSS Modules, styles globaux
+- **Next.js** avec App Router pour une gestion dynamique des pages et des API.
+- **TypeScript** pour une sécurité de typage renforcée.
+- **React** pour la création de composants d’interface réactifs.
+- **PostgreSQL** pour le stockage relationnel des menus, feedbacks, utilisateurs et tracking.
+- **JWT & bcrypt** pour l’authentification sécurisée des administrateurs.
+- **Zustand** pour la gestion d’état côté client (feedback store).
+- **CSS Modules** pour un style scoped et modulaire.
+- **Chart.js** (via react-chartjs-2) pour afficher des graphiques et statistiques sur les feedbacks.
+- **ESLint** pour assurer un code de qualité et standardisé.
+
+---
+
+## Processus de déploiement
+
+Le fichier **Procfile** (situé à la racine) contient la commande de démarrage :
+
+```plaintext
+web: npm run start
+```
+
+Ceci est particulièrement utile pour déployer l’application sur des plateformes PaaS telles que Heroku. Assurez-vous que toutes les variables d’environnement sont correctement définies en production, notamment le `DATABASE_URL` et le `JWT_SECRET`.
 
 ---
 
 ## Contribution
 
-Les contributions sont les bienvenues ! Voici quelques étapes pour contribuer :
+Les contributions sont les bienvenues ! Pour contribuer, suivez ces étapes :
 
-1. **Fork** ce dépôt.
-2. Créez une branche pour votre fonctionnalité ou correction de bug :
+1. **Forkez** ce dépôt sur GitHub.
+2. Créez une branche pour votre fonctionnalité ou correction :
+
    ```bash
-   git checkout -b feature/ma-nouvelle-fonctionnalite
+   git checkout -b feature/nom-de-la-fonctionnalité
    ```
-3. Commitez vos modifications avec des messages clairs.
-4. Poussez la branche et ouvrez une Pull Request.
 
-Pour toute question ou demande d’amélioration, n’hésitez pas à ouvrir une issue sur le dépôt GitHub.
+3. Apportez vos modifications et assurez-vous que les tests passent.
+4. Commitez vos changements avec des messages clairs et concis.
+5. Poussez votre branche et ouvrez une Pull Request pour examen.
+
+N’hésitez pas à soumettre des issues pour signaler des bugs ou proposer des améliorations.
 
 ---
 
 ## Licence
 
-Ce projet est sous licence [MIT](./LICENSE).
+Ce projet est distribué sous la licence MIT. Consultez le fichier [LICENSE](./LICENSE) pour plus de détails.
+
+---
+
+## Remerciements
+
+Un grand merci à toutes les personnes ayant contribué aux idées et au développement de Discu-Table. Que ce soit via le feedback, la correction de bugs ou les suggestions d’améliorations, vos contributions font de ce projet un outil toujours plus pertinent pour améliorer l’expérience du RU.
+
+---
+
+Discu-Table est conçu pour être évolutif et modulaire. Que vous souhaitiez ajouter de nouvelles fonctionnalités, modifier l’interface utilisateur ou améliorer les performances, l’architecture du projet a été pensée pour faciliter la prise en main et le développement collaboratif.
+
+Bonne continuation et bon codage !
