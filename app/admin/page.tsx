@@ -162,6 +162,22 @@ export default function AdminPanel() {
     }
   };
 
+  // Nouvelle fonction : déclenche le scraping des menus
+  const handleScrapeMenus = async () => {
+    try {
+      const res = await fetch('/api/admin/menu/scrape', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setMessage('Menus scrappés et mis à jour avec succès');
+      } else {
+        setMessage('Erreur lors du scraping des menus');
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage('Erreur lors du scraping des menus');
+    }
+  };
+
   // Gestion des statistiques
   const fetchStatistics = async () => {
     setLoadingStats(true);
@@ -277,6 +293,9 @@ export default function AdminPanel() {
       {activeTab === 'menus' && (
         <div>
           <h2>Gérer les menus</h2>
+          <button onClick={handleScrapeMenus} className={styles.submitButton} style={{ marginBottom: '16px' }}>
+            Mettre à jour les menus automatiquement
+          </button>
           <div className={styles.timeline}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Choisissez la date :</label>
