@@ -19,6 +19,50 @@
   gap: 60px;
   font-family: var(--font-geist-sans);
 }
+/* =========================== */
+/* Responsive design for mobile (homepage) */
+/* =========================== */
+@media (max-width: 600px) {
+  .container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 16px;
+    gap: 24px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 1rem;
+  }
+
+  .nav {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .menuGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .infoGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .buttonContainer {
+    width: 100%;
+  }
+
+  .noteButton {
+    width: 100%;
+  }
+}
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
@@ -396,6 +440,54 @@ a.secondary {
   width: 100%;
 }
 
-.infoSection {
-  box-shadow: none;
+ .infoSection {
+   box-shadow: none;
+ }
+/* =========================== */
+/* Mobile overrides for homepage */
+/* =========================== */
+@media (max-width: 600px) {
+  .container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 16px;
+    gap: 24px;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 1rem;
+  }
+
+  .nav {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
+
+  .menuGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .infoGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .buttonContainer {
+    width: 100%;
+  }
+
+  .noteButton {
+    width: 100%;
+  }
 }
