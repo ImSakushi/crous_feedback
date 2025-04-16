@@ -1,17 +1,27 @@
 /* styles/globals.css */
+/* Reset default margins, paddings and prevent horizontal scroll */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+/* Use border-box sizing throughout */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
-    /* ... */
-  }
-  
-  body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: var(--font-marianne), Arial, Helvetica, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  /* Autres styles */
-  
+  --background: #ffffff;
+  --foreground: #171717;
+  /* ... */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-marianne), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Autres styles */
