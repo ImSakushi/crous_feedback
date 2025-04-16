@@ -200,6 +200,10 @@ export default function AdminPanel() {
       setLoadingStats(false);
     }
   };
+  // Filtrer automatiquement au changement des dates
+  useEffect(() => {
+    fetchStatistics();
+  }, [filterStartDate, filterEndDate]);
 
   // Options communes pour les graphiques
   const lineChartOptions = {
@@ -425,18 +429,47 @@ export default function AdminPanel() {
                 onChange={(e) => setFilterEndDate(e.target.value)}
               />
             </div>
-            <button onClick={fetchStatistics} className={styles.submitButton}>
-              Filtrer
-            </button>
           </div>
           {loadingStats ? (
             <p>Chargement des statistiques...</p>
           ) : stats ? (
             <div>
-              <p>Total des feedbacks : {stats.total}</p>
-              <p>
-                Moyennes : Plat principal {stats.averages.avg_main_dish ? parseFloat(stats.averages.avg_main_dish).toFixed(1) : '-'} | Goût du plat {stats.averages.avg_main_taste ? parseFloat(stats.averages.avg_main_taste).toFixed(1) : '-'} | Accompagnement {stats.averages.avg_accompaniment ? parseFloat(stats.averages.avg_accompaniment).toFixed(1) : '-'} | Goût de l'accompagnement {stats.averages.avg_accompaniment_taste ? parseFloat(stats.averages.avg_accompaniment_taste).toFixed(1) : '-'} | Portion {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'}
-              </p>
+              <div className={styles.statsSummary}>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Total des feedbacks</div>
+                  <div className={styles.statsCardValue}>{stats.total}</div>
+                </div>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Moyenne Plat principal</div>
+                  <div className={styles.statsCardValue}>
+                    {stats.averages.avg_main_dish ? parseFloat(stats.averages.avg_main_dish).toFixed(1) : '-'}
+                  </div>
+                </div>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Moyenne Goût du plat</div>
+                  <div className={styles.statsCardValue}>
+                    {stats.averages.avg_main_taste ? parseFloat(stats.averages.avg_main_taste).toFixed(1) : '-'}
+                  </div>
+                </div>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Moyenne Accompagnement</div>
+                  <div className={styles.statsCardValue}>
+                    {stats.averages.avg_accompaniment ? parseFloat(stats.averages.avg_accompaniment).toFixed(1) : '-'}
+                  </div>
+                </div>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Moyenne Goût accompagnement</div>
+                  <div className={styles.statsCardValue}>
+                    {stats.averages.avg_accompaniment_taste ? parseFloat(stats.averages.avg_accompaniment_taste).toFixed(1) : '-'}
+                  </div>
+                </div>
+                <div className={styles.statsCard}>
+                  <div className={styles.statsCardTitle}>Moyenne Portion</div>
+                  <div className={styles.statsCardValue}>
+                    {stats.averages.avg_portion ? parseFloat(stats.averages.avg_portion).toFixed(1) : '-'}
+                  </div>
+                </div>
+              </div>
 
               {/* Graphique linéaire : Évolution des feedbacks */}
               <div className={styles.chartContainer}>

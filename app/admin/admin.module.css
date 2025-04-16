@@ -148,3 +148,29 @@
   .commentsTable th {
     background-color: #f0f0f0;
   }
+  
+  /* Styles pour le résumé des statistiques */
+  .statsSummary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .statsCard {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    flex: 1 1 120px;
+  }
+  .statsCardTitle {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  .statsCardValue {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
