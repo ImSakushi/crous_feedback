@@ -63,6 +63,15 @@ export default function MealFeedbackPage() {
   }, [resetForm]);
 
   const handleSubmit = async () => {
+    // Prevent multiple votes within 3 hours on the same device
+    const lastVoteTs = localStorage.getItem('crous_last_vote_ts');
+    if (lastVoteTs) {
+      const last = parseInt(lastVoteTs, 10);
+      if (Date.now() - last < 3 * 3600 * 1000) {
+        alert('Vous avez déjà voté il y a moins de 3 heures sur cet appareil. Veuillez réessayer plus tard.');
+        return;
+      }
+    }
     const finalDishes = [...selectedDishes];
     if (selectedDishes.includes("other") && customDish.trim() !== "") {
       const index = finalDishes.indexOf("other");
@@ -103,6 +112,7 @@ export default function MealFeedbackPage() {
         }),
       });
       if (res.ok) {
+        localStorage.setItem('crous_last_vote_ts', Date.now().toString());
         resetForm();
         setSelectedDishes([]);
         setCustomDish('');
