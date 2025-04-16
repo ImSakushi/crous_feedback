@@ -161,20 +161,27 @@ export default function AdminPanel() {
       setMessage('Erreur lors de la mise à jour du menu');
     }
   };
+  // État et message pour mise à jour automatique des menus
+  const [isScraping, setIsScraping] = useState(false);
+  const [scrapeMessage, setScrapeMessage] = useState('');
 
   // Nouvelle fonction : déclenche le scraping des menus
   const handleScrapeMenus = async () => {
+    setIsScraping(true);
+    setScrapeMessage('');
     try {
       const res = await fetch('/api/admin/menu/scrape', { method: 'POST' });
       if (res.ok) {
-        const data = await res.json();
-        setMessage('Menus scrappés et mis à jour avec succès');
+        await res.json();
+        setScrapeMessage('Les menus ont été mis à jour');
       } else {
-        setMessage('Erreur lors du scraping des menus');
+        setScrapeMessage('Erreur lors de la mise à jour des menus');
       }
     } catch (error) {
       console.error(error);
-      setMessage('Erreur lors du scraping des menus');
+      setScrapeMessage('Erreur lors de la mise à jour des menus');
+    } finally {
+      setIsScraping(false);
     }
   };
 
@@ -297,9 +304,17 @@ export default function AdminPanel() {
       {activeTab === 'menus' && (
         <div>
           <h2>Gérer les menus</h2>
-          <button onClick={handleScrapeMenus} className={styles.submitButton} style={{ marginBottom: '16px' }}>
-            Mettre à jour les menus automatiquement
-          </button>
+          <div style={{ marginBottom: '16px' }}>
+            <button
+              onClick={handleScrapeMenus}
+              className={styles.updateButton}
+              disabled={isScraping}
+            >
+              {isScraping && <span className={styles.spinner} />}
+              {isScraping ? 'Mise à jour...' : 'Mettre à jour les menus automatiquement'}
+            </button>
+            {scrapeMessage && <p className={styles.scrapeMessage}>{scrapeMessage}</p>}
+          </div>
           <div className={styles.timeline}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Choisissez la date :</label>

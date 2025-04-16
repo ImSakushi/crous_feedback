@@ -174,3 +174,45 @@
     font-weight: bold;
     color: #333;
   }
+  
+  /* Styles pour le bouton de mise à jour automatique */
+  .updateButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: var(--font-marianne), sans-serif;
+    transition: background-color 0.3s ease;
+  }
+  .updateButton:hover:not(:disabled) {
+    background-color: #218838;
+  }
+  .updateButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.7);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+  }
+  .scrapeMessage {
+    margin-top: 8px;
+    color: #28a745;
+    font-weight: 500;
+  }
