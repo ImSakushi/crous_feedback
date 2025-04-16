@@ -60,7 +60,7 @@ export default function MealFeedbackPage() {
         }
       })
       .catch(err => console.error(err));
-  }, []);
+  }, [resetForm]);
 
   const handleSubmit = async () => {
     const finalDishes = [...selectedDishes];
