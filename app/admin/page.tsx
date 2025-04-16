@@ -553,13 +553,29 @@ export default function AdminPanel() {
               <div className={styles.commentsSection} style={{ marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #ccc' }}>
                 <h3>Commentaires</h3>
                 {stats.comments && stats.comments.length > 0 ? (
-                  <ul>
-                    {stats.comments.map((item: any, index: number) => (
-                      <li key={index}>
-                        <strong>{new Date(item.date).toLocaleDateString('fr-FR')}</strong> : {item.comment}
-                      </li>
-                    ))}
-                  </ul>
+                  <table className={styles.commentsTable}>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Heure</th>
+                        <th>Plat choisi</th>
+                        <th>Commentaire</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.comments.map((item: any, index: number) => {
+                        const dateObj = new Date(item.date);
+                        return (
+                          <tr key={index}>
+                            <td>{dateObj.toLocaleDateString('fr-FR')}</td>
+                            <td>{dateObj.toLocaleTimeString('fr-FR')}</td>
+                            <td>{item.chosen_main_course}</td>
+                            <td>{item.comment}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 ) : (
                   <p>Aucun commentaire disponible pour la période sélectionnée.</p>
                 )}

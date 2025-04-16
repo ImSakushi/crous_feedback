@@ -108,8 +108,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       params
     );
 
-    // Récupération des commentaires non vides
-    let commentsQuery = `SELECT comment, date FROM feedback `;
+    // Récupération des commentaires non vides avec le plat choisi
+    // On inclut chosen_main_course pour afficher le plat sélectionné
+    let commentsQuery = `SELECT comment, date, chosen_main_course FROM feedback `;
     if (filterClause) {
       commentsQuery += ` ${filterClause} AND comment IS NOT NULL AND comment <> '' ORDER BY date DESC`;
     } else {
